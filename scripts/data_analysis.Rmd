@@ -1,0 +1,2162 @@
+---
+title: "CedV fusion"
+author: "Amandine Gamble"
+date: "21 November 2020"
+output:
+  html_document:
+    code_folding: show
+    theme: united
+    toc: yes
+    toc_float: 
+      collapsed: false
+editor_options:
+  chunk_output_type: console
+---
+
+<style type="text/css">
+  body{/* Normal */ font-size: 12px;}
+  h1.title{font-size: 22px;}
+  h1{/* Header 1 */ font-size: 18px;}
+  h2{/* Header 2 */ font-size: 16px;}
+  h3{ /* Header 2 */ font-size: 14px;}
+  code.r{/* Code block */ font-size: 10px;}
+  pre{/* Code block - determines code spacing between lines */ font-size: 10px;}
+</style>
+
+# Setup
+
+```{r setup, message = F}
+
+# Rmarkdown options
+knitr::opts_chunk$set(warning = F) 
+
+```
+
+```{r, message = F}
+
+# working directory
+path = "D:/work/postdoc_UCLA/1_project_PREEMPT/5_models/6_CedV_Yao/CedV_fusion"
+
+# source file
+file = "data_clean/Yeo_CedV_fusion.csv"
+
+# needed packages
+packages = c("tidyr", "ggplot2", "patchwork", "cowplot", "lme4", "lmerTest", "car", "kableExtra", "ggpubr", "magick", "multcomp", "nlme", "lsmeans", "dplyr")
+
+# install and load packages
+suppressMessages(invisible(lapply(
+  packages,
+  function(x) {
+    if (!require(x, character.only = TRUE)) {
+      install.packages(x, dependencies = TRUE)
+      library(x, character.only = TRUE)
+    }
+  }
+)))
+
+# custom ggtheme for figures
+ggtheme = theme_bw() +
+  theme(
+    plot.title = element_text(size = 10, hjust = 0, face = "bold", margin=margin(0, 0, 0, 0)), 
+    plot.margin = margin(6, 6, 6, 6),  
+    panel.grid.minor = element_blank(), 
+    panel.grid.major = element_blank(), 
+    axis.title.y.right = element_text(angle = 90),
+    axis.title = element_text(size = 8), 
+    axis.text = element_text(size = 8, color = "black"), 
+    axis.line = element_line(size = 0.25, color = "black"), 
+    axis.ticks = element_line(size = 0.25, color = "black"), 
+    strip.text = element_text(size = 8), 
+    strip.background = element_blank(), 
+    legend.margin = margin(0, 0, 0, 0), 
+    legend.title = element_text(size = 8), 
+    legend.text = element_text(size = 8), 
+    legend.key = element_rect(fill = NA, color = NA), 
+    legend.key.size = unit(0.4, "cm"), 
+    legend.background = element_rect(colour = "transparent", fill = ggplot2::alpha("white", 0))
+ )
+
+# kable options
+options(knitr.kable.NA = "")
+
+# set working directory
+setwd(path)
+
+# import data
+data = read.table(file, sep = ";", header = T)
+
+```
+
+Data produced by Yao Yu Yeo, Aguilar Lab, Cornell University. Raw data will be made available upon manuscript publication.
+
+```{r}
+
+# DATA FORMATTING
+
+# order factors
+data$virus = factor(data$virus, levels = c("Vector", 
+                                           "NiV", "NiV_167", "NiV_170",
+                                           "HeV", "HeV_167", "HeV_170",
+                                           "CedV", "CedV_188", "CedV_190", "CedV_193",  "CedV_196", "CedV_199", "CedV_202"))
+data$variable = factor(data$variable, levels = c("CSE_G", "CSE_F", 
+                                                 "fusion", "fusion_mean", 
+                                                 "Tetramer", "Dimer", "Monomer1", "Monomer2",
+                                                 "binding",
+                                                 "CoIP_GHA", "IP_FFLAG", "Lysate_GHA"))
+
+# calculate mean fusion per well for experiments for which data are reported for 5 fields per well 
+# to uniformize across experiments
+data = aggregate(value ~ variable + virus + replicate + conditions + experiment + tag, data = data, mean, na.action = na.pass)
+data[data$variable == "fusion", "variable"] = "fusion_mean"
+
+# distinguish biological from technical replicates
+data$replicate_bio = substr(data$replicate, 5, 5)
+data$replicate_tec = substr(data$replicate, 7, 7)
+data[data$replicate_tec == "", "replicate_tec"] = NA
+
+```
+
+# 1. CedV / NiV comparison (Figure 2)
+
+## 1.1. Data exploration
+
+### 1.1.1. CSE and fusion 
+
+```{r, fig.width = 24 / 2.54, fig.height = 7 / 2.54}
+
+# subset data of interest
+CvN = subset(data, experiment == "fusogenicity NiV vs CedV",
+             select = -c(experiment))
+
+# calculate mean across technical replicates for figures
+CSE_fusion_aggr = aggregate(value ~ variable + conditions + virus + replicate_bio, data = CvN, mean)
+
+# plot raw data
+ggplot(CSE_fusion_aggr, aes(x = virus, y = value, color = variable, shape = variable, group = variable)) +
+  geom_point(size = 1, alpha = 0.7, position=position_dodge(width = 0.25), color = "grey") +
+  stat_summary(fun.data = mean_sdl, fun.args = list(mult = 1), position=position_dodge(width = 0.25), alpha = 0.7) + 
+  facet_grid(. ~ conditions) +
+  scale_y_continuous(name = "Cell surface expression (CSE)", 
+                     sec.axis = sec_axis(~ . * 1, name="Fusion")) +
+  scale_shape_manual(values = c(19, 19, 17), labels = c("G CSE", "F CSE", "Fusion")) +
+  scale_color_manual(values = c("#67a9cf", "#ef8a62", "black"), labels = c("G CSE", "F CSE", "Fusion")) +
+  ggtheme + theme(axis.title.x = element_blank(), legend.title = element_blank()) +
+  ggtitle("Raw data") 
+
+# transform into relative data
+CSE_fusion_aggr$value_relative = NA
+for (i in 1:nrow(CSE_fusion_aggr)){
+  CSE_fusion_aggr$value_relative[i] = CSE_fusion_aggr$value[i] / 
+    CSE_fusion_aggr[CSE_fusion_aggr$replicate_bio == CSE_fusion_aggr$replicate_bio[i] & 
+              CSE_fusion_aggr$conditions == CSE_fusion_aggr$conditions[i] &
+              CSE_fusion_aggr$variable == CSE_fusion_aggr$variable[i] &
+              CSE_fusion_aggr$virus == "NiV", "value"]
+}
+remove(i)
+
+# plot relative data
+ggplot(CSE_fusion_aggr, aes(x = virus, y = value_relative, color = variable, shape = variable, group = variable)) +
+  geom_point(size = 1, alpha = 0.7, position=position_dodge(width = 0.25), color = "grey") +
+  stat_summary(fun.data = mean_sdl, fun.args = list(mult = 1), position=position_dodge(width = 0.25), alpha = 0.7) + 
+  facet_grid(. ~ conditions) +
+  scale_y_continuous(name = "Cell surface expression (CSE)", limits = c(-0.01,1.25), breaks = seq(0, 1.25, 0.25), labels = scales::percent,
+                     sec.axis = sec_axis(~ . * 1, name="Relative fusion", breaks = seq(0, 1.25, 0.25), labels = scales::percent)) +
+  scale_shape_manual(values = c(19, 19, 17), labels = c("G CSE", "F CSE", "Fusion")) +
+  scale_color_manual(values = c("#67a9cf", "#ef8a62", "black"), labels = c("G CSE", "F CSE", "Fusion")) +
+  ggtheme + theme(axis.title.x = element_blank(), legend.title = element_blank())+
+  ggtitle("Relative data") 
+
+```
+
+### 1.1.2. Fusion index 
+
+```{r, fig.width = 24 / 2.54, fig.height = 7 / 2.54}
+
+# fusion index
+FI = pivot_wider(names_from = variable, values_from = value, data = CvN)
+FI$FI_G = FI$fusion_mean / FI$CSE_G
+FI$FI_F = FI$fusion_mean / FI$CSE_F
+FI = pivot_longer(cols = c(FI_G, FI_F), names_to = "variable", values_to = "value", data = FI)
+FI$variable = factor(FI$variable, levels = c("FI_G", "FI_F"))
+
+# calculate mean across technical replicates for figures
+FI_aggr = aggregate(value ~ variable + conditions + virus + replicate_bio, data = FI, mean)
+
+# plot raw data
+ggplot(FI_aggr, aes(x = virus, y = value, color = variable, group = variable)) +
+  geom_point(size = 1, alpha = 0.7, position=position_dodge(width = 0.25), color = "grey", shape = 17) +
+  stat_summary(fun.data = mean_sdl, fun.args = list(mult = 1), position=position_dodge(width = 0.25), alpha = 0.7, shape = 17) + 
+  facet_grid(. ~ conditions) +
+  scale_y_continuous(name = "Fusion index") +
+  scale_color_manual(values = c("#67a9cf", "#ef8a62"), labels = c("Fusion index / G", "Fusion index / F")) +
+  ggtheme + theme(axis.title.x = element_blank(), legend.title = element_blank()) +
+  ggtitle("Raw data") 
+
+# transform into relative data
+FI_aggr$value_relative = NA
+for (i in 1:nrow(FI_aggr)){
+  FI_aggr$value_relative[i] = FI_aggr$value[i] / 
+    FI_aggr[FI_aggr$replicate_bio == FI_aggr$replicate_bio[i] & 
+              FI_aggr$conditions == FI_aggr$conditions[i] &
+              FI_aggr$variable == FI_aggr$variable[i] &
+              FI_aggr$virus == "NiV", "value"]
+}
+remove(i)
+
+# plot relative data
+ggplot(FI_aggr, aes(x = virus, y = value_relative, color = variable, group = variable)) +
+  geom_point(size = 1, alpha = 0.7, position=position_dodge(width = 0.25), color = "grey", shape = 17) +
+  stat_summary(fun.data = mean_sdl, fun.args = list(mult = 1), position=position_dodge(width = 0.25), alpha = 0.7, shape = 17) + 
+  facet_grid(. ~ conditions) +
+  scale_y_continuous(name = "Fusion index", limits = c(-0.01,1.25), breaks = seq(0, 1.25, 0.25), labels = scales::percent) +
+  scale_color_manual(values = c("#67a9cf", "#ef8a62"), labels = c("Fusion index / G", "Fusion index / F")) +
+  ggtheme + theme(axis.title.x = element_blank(), legend.title = element_blank())+
+  ggtitle("Relative data") 
+
+```
+
+## 1.2. Publication figure
+
+```{r, warning = F, fig.show = 'hide'}
+
+plot_1 = ggplot(subset(CSE_fusion_aggr, conditions == "NiV:CedV = 1:1"), aes(x = virus, y = value_relative, color = variable, shape = variable, group = variable)) +
+  geom_point(size = 1, alpha = 0.7, position=position_dodge(width = 0.25), color = "grey") +
+  stat_summary(fun.data = mean_sdl, fun.args = list(mult = 1), position=position_dodge(width = 0.25), alpha = 0.7, size = 0.25) + 
+  scale_y_continuous(name = "Cell surface\nexpression (CSE)", limits = c(-0.01,1.25), breaks = seq(0, 1.25, 0.5), labels = scales::percent, sec.axis = sec_axis(~ . * 1, breaks = seq(0, 1.25, 0.5))) +
+  scale_shape_manual(values = c(19, 19, 17), labels = c("G CSE", "F CSE", "Fusion")) +
+  scale_color_manual(values = c("#67a9cf", "#ef8a62", "black"), labels = c("G CSE", "F CSE", "Fusion")) +
+  ggtheme + theme(axis.title.x = element_blank(), legend.title = element_blank()) +
+  theme(axis.text.x = element_blank(), axis.text.y.right = element_blank())
+
+plot_2 = ggplot(subset(FI_aggr, conditions == "NiV:CedV = 1:1"), aes(x = virus, y = value_relative, color = variable, group = variable)) +
+  geom_point(size = 1, alpha = 0.7, position=position_dodge(width = 0.25), color = "grey", shape = 17) +
+  stat_summary(fun.data = mean_sdl, fun.args = list(mult = 1), position=position_dodge(width = 0.25), alpha = 0.7, shape = 17, size = 0.25) + 
+  scale_y_continuous(name = "Fusion\nindex (FI)", limits = c(-0.01,1.25), breaks = seq(0, 1.25, 0.5), labels = scales::percent) +
+  scale_color_manual(values = c("#67a9cf", "#ef8a62"), labels = c("FI / G", "FI / F")) +
+  ggtheme + theme(axis.title.x = element_blank(), legend.title = element_blank())
+
+plot_3 = ggplot(subset(CSE_fusion_aggr, conditions == "NiV:CedV = 2:1"), aes(x = virus, y = value_relative, color = variable, shape = variable, group = variable)) +
+  geom_point(size = 1, alpha = 0.7, position=position_dodge(width = 0.25), color = "grey") +
+  stat_summary(fun.data = mean_sdl, fun.args = list(mult = 1), position=position_dodge(width = 0.25),  alpha = 0.7, size = 0.25) + 
+  scale_y_continuous(name = "Fusion", limits = c(-0.01,1.25), breaks = seq(0, 1.25, 0.5), labels = scales::percent, position = "right", sec.axis = sec_axis(~ . * 1, breaks = seq(0, 1.25, 0.5))) +
+  scale_shape_manual(values = c(19, 19, 17), labels = c("G CSE", "F CSE", "Fusion")) +
+  scale_color_manual(values = c("#67a9cf", "#ef8a62", "black"), labels = c("G CSE", "F CSE", "Fusion")) +
+  ggtheme + theme(axis.title.x = element_blank(), legend.title = element_blank()) +
+  theme(axis.text.x = element_blank(), axis.text.y.left = element_blank())
+
+plot_4 = ggplot(subset(FI_aggr, conditions == "NiV:CedV = 2:1"), aes(x = virus, y = value_relative, color = variable, group = variable)) +
+  geom_point(size = 1, alpha = 0.7, position=position_dodge(width = 0.25), color = "grey", shape = 17) +
+  stat_summary(fun.data = mean_sdl, fun.args = list(mult = 1), position=position_dodge(width = 0.25),  alpha = 0.7, shape = 17, size = 0.25) + 
+  scale_y_continuous(name = "Fusion\nindex (FI)", limits = c(-0.01,1.25), breaks = seq(0, 1.25, 0.5), labels = scales::percent) +
+  scale_color_manual(values = c("#67a9cf", "#ef8a62"), labels = c("FI / G", "FI / F")) +
+  ggtheme + theme(axis.title.x = element_blank(), legend.title = element_blank()) +
+  theme(axis.title.y = element_blank(), axis.text.y = element_blank())
+
+# ASSEMBLE
+
+# subassemblage
+plot_left = (plot_1 + plot_2) + plot_layout(ncol = 1, heights = c(1, 1))
+plot_right = (plot_3 + plot_4) + plot_layout(ncol = 1, heights = c(1, 1))
+
+# complete assemblage
+patchwork = (plot_left | plot_right) + 
+  plot_layout(guides = "collect") & theme(legend.position = "right", legend.box.just = "left") &
+  theme(plot.tag = element_text(size = 8, face = "bold"))  
+
+# print figure
+# patchwork
+
+# save figure
+ggsave(paste0("export/CedV_fusion_", "Fig2", ".pdf"),
+       width = 15.5, height = 6, units = "cm", dpi = 600)
+
+```
+
+## 1.3. Statistical analyses
+
+### 1.3.1. NiV:CeV = 1:1
+
+Test 1: fusion; Test 2: fusion index / F; Test 3: fusion index / G
+
+Homo: under the homoscedasticity assumption; Hetero: under the heteroscedasticity assumption
+
+```{r}
+
+# Tests
+
+test_1_homo = lme(value ~ virus, random = ~ 1|replicate_bio,
+                    data = subset(CvN, variable == "fusion_mean" & conditions == "NiV:CedV = 1:1"),
+                    method = "ML")
+
+test_1_hetero = lme(value ~ virus, random = ~ 1|replicate_bio,
+                    data = subset(CvN, variable == "fusion_mean" & conditions == "NiV:CedV = 1:1"),
+                    method = "ML",
+                    weights = varIdent(form = ~ 1|virus))
+
+anova(test_1_homo, test_1_hetero)
+anova(test_1_hetero)
+
+test_2_homo = lme(value ~ virus, random = ~ 1|replicate_bio,
+                    data = subset(FI, variable == "FI_F" & conditions == "NiV:CedV = 1:1"),
+                    method = "ML")
+
+test_2_hetero = lme(value ~ virus, random = ~ 1|replicate_bio,
+                    data = subset(FI, variable == "FI_F" & conditions == "NiV:CedV = 1:1"),
+                    method = "ML",
+                    weights = varIdent(form = ~ 1|virus))
+
+anova(test_2_homo, test_2_hetero)
+anova(test_2_hetero)
+
+test_3_homo = lme(value ~ virus, random = ~ 1|replicate_bio,
+                    data = subset(FI, variable == "FI_G" & conditions == "NiV:CedV = 1:1"),
+                    method = "ML")
+
+test_3_hetero = lme(value ~ virus, random = ~ 1|replicate_bio,
+                    data = subset(FI, variable == "FI_G" & conditions == "NiV:CedV = 1:1"),
+                    method = "ML",
+                    weights = varIdent(form = ~ 1|virus))
+
+anova(test_3_homo, test_3_hetero)
+anova(test_3_hetero)
+
+# Store and format results
+
+stats = as.data.frame(rbind(
+  summary(test_1_hetero)$tTable[2, ],
+  summary(test_2_hetero)$tTable[2, ],
+  summary(test_3_hetero)$tTable[2, ]))
+
+stats$variable = c("Fusion",
+                       "Fusion index / F", 
+                       "Fusion index / G")
+
+stats$comparison = "CedV - NiV"
+
+stats$test = "Wald test (t-ratio)"
+
+stats = stats[, c("variable", "comparison", "test", "t-value", "p-value", "Value", "Std.Error")]
+colnames(stats) = c("Variable", "Comparison", "Test", "Statistics", "p-value", "Estimate", "se")
+
+stats = stats[order(stats$Variable), ]
+
+stats = stats %>% mutate_if(is.numeric, round, digits = 2)
+
+stats[stats$p_value < 0.001, "p-value"] = "< 0.001"
+
+stats$Estimate = paste0(stats$Estimate, " ± ", stats$se)
+
+stats = stats[, c("Variable", "Comparison", "Test", "Statistics", "p-value", "Estimate")]
+
+kable(stats, digits = 2, row.names = F) %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"))
+
+```
+
+### 1.3.2. NiV:CeV = 2:1
+
+Test 1: fusion; Test 2: fusion index / F; Test 3: fusion index / G
+
+Homo: under the homoscedasticity assumption; Hetero: under the heteroscedasticity assumption
+
+```{r}
+
+# Tests
+
+test_1_homo = lme(value ~ virus, random = ~ 1|replicate_bio,
+                    data = subset(CvN, variable == "fusion_mean" & conditions == "NiV:CedV = 2:1"),
+                    method = "ML")
+
+test_1_hetero = lme(value ~ virus, random = ~ 1|replicate_bio,
+                    data = subset(CvN, variable == "fusion_mean" & conditions == "NiV:CedV = 2:1"),
+                    method = "ML",
+                    weights = varIdent(form = ~ 1|virus))
+
+anova(test_1_homo, test_1_hetero)
+anova(test_1_hetero)
+
+test_2_homo = lme(value ~ virus, random = ~ 1|replicate_bio,
+                    data = subset(FI, variable == "FI_F" & conditions == "NiV:CedV = 2:1"),
+                    method = "ML")
+
+test_2_hetero = lme(value ~ virus, random = ~ 1|replicate_bio,
+                    data = subset(FI, variable == "FI_F" & conditions == "NiV:CedV = 2:1"),
+                    method = "ML",
+                    weights = varIdent(form = ~ 1|virus))
+
+anova(test_2_homo, test_2_hetero)
+anova(test_2_hetero)
+
+test_3_homo = lme(value ~ virus, random = ~ 1|replicate_bio,
+                    data = subset(FI, variable == "FI_G" & conditions == "NiV:CedV = 2:1"),
+                    method = "ML")
+
+test_3_hetero = lme(value ~ virus, random = ~ 1|replicate_bio,
+                    data = subset(FI, variable == "FI_G" & conditions == "NiV:CedV = 2:1"),
+                    method = "ML",
+                    weights = varIdent(form = ~ 1|virus))
+
+anova(test_3_homo, test_3_hetero)
+anova(test_3_hetero)
+
+# Store and format results
+
+stats = as.data.frame(rbind(
+  summary(test_1_hetero)$tTable[2, ],
+  summary(test_2_hetero)$tTable[2, ],
+  summary(test_3_hetero)$tTable[2, ]))
+
+stats$variable = c("Fusion",
+                       "Fusion index / F", 
+                       "Fusion index / G")
+
+stats$comparison = "CedV - NiV"
+
+stats$test = "Wald test (t-ratio)"
+
+stats = stats[, c("variable", "comparison", "test", "t-value", "p-value", "Value", "Std.Error")]
+colnames(stats) = c("Variable", "Comparison", "Test", "Statistics", "p-value", "Estimate", "se")
+
+stats = stats[order(stats$Variable), ]
+
+stats = stats %>% mutate_if(is.numeric, round, digits = 2)
+
+stats[stats$p_value < 0.001, "p-value"] = "< 0.001"
+
+stats$Estimate = paste0(stats$Estimate, " ± ", stats$se)
+
+stats = stats[, c("Variable", "Comparison", "Test", "Statistics", "p-value", "Estimate")]
+
+kable(stats, digits = 2, row.names = F) %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"))
+
+```
+
+```{r}
+
+# clean working space
+remove(CvN, CSE_fusion_aggr, FI, FI_aggr)
+remove(plot_1, plot_2, plot_3, plot_4, plot_left, plot_right, patchwork)
+remove(test_1_hetero, test_1_homo, test_2_hetero, test_2_homo, test_3_hetero, test_3_homo, stats)
+
+```
+
+# 2. Headless mutant exploration (Figure 3)
+
+## 2.1. Data exploration
+
+### 2.1.1. CedV mutant fusion
+
+```{r, warning = F, fig.width = 24 / 2.54, fig.height = 7 / 2.54}
+
+# subset data of interest
+Cm_fusion = subset(data, experiment == "fusion CedV mutants",
+             select = -c(experiment))
+
+# order factors 
+Cm_fusion$conditions = droplevels(Cm_fusion$conditions)
+Cm_fusion$conditions = factor(Cm_fusion$conditions, levels = c("HEK 293T", "CHO pgsA-745"))
+
+# plot raw data with color for replicates
+# ggplot(Cm_fusion, aes(x = virus, y = value, color = replicate_bio, group = conditions)) +
+#   geom_point(size = 1, alpha = 0.7, position=position_dodge(width = .25), shape = 17) +
+#   scale_x_discrete(labels = c("Vector", "CedV WT", "188", "190", "193", "196", "199", "202")) +
+#   scale_y_continuous(name = "Fusion") +
+#   scale_fill_manual(values = c("black", "white")) +
+#   ggtheme + theme(axis.title.x = element_blank(), legend.title = element_blank()) +
+#   ggtitle("Raw data / replicate") 
+
+# plot raw data
+ggplot(Cm_fusion, aes(x = virus, y = value, fill = conditions, group = conditions)) +
+  geom_point(size = 1, alpha = 0.7, position=position_dodge(width = .25), color = "grey", shape = 17) +
+  stat_summary(fun.data = mean_sdl, fun.args = list(mult = 1), position=position_dodge(width = .25), alpha = 0.7, shape = 24) + 
+  scale_x_discrete(labels = c("Vector", "CedV WT", "188", "190", "193", "196", "199", "202")) +
+  scale_y_continuous(name = "Fusion") +
+  scale_fill_manual(values = c("black", "white")) +
+  ggtheme + theme(axis.title.x = element_blank(), legend.title = element_blank()) +
+  ggtitle("Raw data") 
+
+# transform into relative data
+
+# relative to wild-type CedV in HEK 293T
+
+# Cm_fusion$value_relative = NA
+# for (i in 1:nrow(Cm_fusion)){
+#   Cm_fusion$value_relative[i] = Cm_fusion$value[i] / 
+#     Cm_fusion[Cm_fusion$replicate_bio == Cm_fusion$replicate_bio[i] & 
+#               Cm_fusion$conditions == "HEK 293T" &
+#               Cm_fusion$variable == Cm_fusion$variable[i] &
+#               Cm_fusion$virus == "CedV", "value"]
+# }
+# remove(i)
+
+# with CedV 103 set at the same value in both cell types
+
+Cm_fusion$value_relative = NA
+for (i in 1:nrow(Cm_fusion)){
+ Cm_fusion$value_relative[i] = Cm_fusion$value[i] / 
+   Cm_fusion[Cm_fusion$replicate_bio == Cm_fusion$replicate_bio[i] & 
+             Cm_fusion$conditions == Cm_fusion$conditions[i] &
+             Cm_fusion$variable == Cm_fusion$variable[i] &
+             Cm_fusion$virus == "CedV", "value"]
+}
+remove(i)
+
+norm_factor = mean(Cm_fusion[Cm_fusion$virus == "CedV_193" & Cm_fusion$conditions == "CHO pgsA-745", "value"]) *
+  mean(Cm_fusion[Cm_fusion$virus == "CedV" & Cm_fusion$conditions == "HEK 293T", "value"]) /
+  mean(Cm_fusion[Cm_fusion$virus == "CedV_193" & Cm_fusion$conditions == "HEK 293T", "value"]) 
+Cm_fusion[is.na(Cm_fusion$value_relative), "value_relative"] = 
+  Cm_fusion[is.na(Cm_fusion$value_relative), "value"] / norm_factor
+Cm_fusion[Cm_fusion$value_relative == "Inf", "value_relative"] = 
+  Cm_fusion[Cm_fusion$value_relative == "Inf", "value"] / norm_factor
+remove(norm_factor)
+
+# plot relative data
+ggplot(Cm_fusion, aes(x = virus, y = value_relative, fill = conditions, group = conditions)) +
+  geom_point(size = 1, alpha = 0.7, position=position_dodge(width = .25), color = "grey", shape = 17) +
+  stat_summary(fun.data = mean_sdl, fun.args = list(mult = 1), position=position_dodge(width = .25), alpha = 0.7, shape = 24) + 
+  scale_x_discrete(labels = c("Vector", "CedV WT", "188", "190", "193", "196", "199", "202")) +
+  scale_y_continuous(name = "Fusion", limits = c(-0.01,5), breaks = seq(0, 5, 1), labels = scales::percent) +
+  scale_fill_manual(values = c("black", "white")) +
+  ggtheme + theme(axis.title.x = element_blank(), legend.title = element_blank()) +
+  ggtitle("Relative data") 
+
+```
+
+### 2.1.2. CedV mutant receptor binding
+
+```{r, warning = F, fig.width = 24 / 2.54, fig.height = 7 / 2.54}
+
+Cm_binding = subset(data, experiment == "binding CedV mutants",
+             select = -c(experiment))
+
+# remove background noise
+background = mean(Cm_binding[Cm_binding$virus == "Vector", "value"])
+Cm_binding$value = Cm_binding$value - background
+remove(background)
+
+# plot raw data
+ggplot(Cm_binding, aes(x = virus, y = value)) +
+  geom_point(size = 1, alpha = 0.7, position=position_dodge(width = .25), color = "grey", shape = 15) +
+  stat_summary(fun.data = mean_sdl, fun.args = list(mult = 1), alpha = 0.7, shape = 15) + 
+  scale_x_discrete(labels = c("Vector", "CedV WT", "188", "190", "193", "196", "199", "202")) +
+  scale_y_continuous(name = "Binding") +
+  ggtheme + theme(axis.title.x = element_blank(), legend.title = element_blank()) +
+  ggtitle("Raw data") 
+
+# transform into relative data
+Cm_binding$value_relative = NA
+for (i in 1:nrow(Cm_binding)){
+  Cm_binding$value_relative[i] = Cm_binding$value[i] / 
+    Cm_binding[Cm_binding$replicate_bio == Cm_binding$replicate_bio[i] & 
+              Cm_binding$conditions == Cm_binding$conditions[i] &
+              Cm_binding$variable == Cm_binding$variable[i] &
+              Cm_binding$virus == "CedV", "value"]
+}
+remove(i)
+
+# plot relative data
+ggplot(Cm_binding, aes(x = virus, y = value_relative)) +
+  geom_point(size = 1, alpha = 0.7, position=position_dodge(width = .25), color = "grey", shape = 15) +
+  stat_summary(fun.data = mean_sdl, fun.args = list(mult = 1), alpha = 0.7, shape = 15) + 
+  scale_x_discrete(labels = c("Vector", "CedV WT", "188", "190", "193", "196", "199", "202")) +
+  scale_y_continuous(name = "Binding", limits = c(-0.01,1), breaks = seq(0, 1, 0.25), labels = scales::percent) +
+  ggtheme + theme(axis.title.x = element_blank(), legend.title = element_blank()) +
+  ggtitle("Relative data") 
+
+```
+
+### 2.1.3. NiV mutant fusion
+
+```{r, warning = F, fig.width = 24 / 2.54, fig.height = 7 / 2.54}
+
+# subset data of interest
+Nm_fusion = subset(data, experiment == "fusion NiV mutants",
+             select = -c(experiment))
+
+# calculate mean across technical replicates for figures
+Nm_fusion_aggr = aggregate(value ~ variable + virus + replicate_bio, data = Nm_fusion, mean)
+
+# plot raw data
+ggplot(Nm_fusion, aes(x = virus, y = value)) +
+  geom_point(size = 1, alpha = 0.7, position=position_dodge(width = .25), solor = "grey", shape = 17) +
+  stat_summary(fun.data = mean_sdl, fun.args = list(mult = 1), alpha = 0.7, shape = 24, fill = "black") + 
+  scale_x_discrete(labels = c("Vector", "NiV WT", "167", "170")) +
+  scale_y_continuous(name = "Fusion") +
+  ggtheme + theme(axis.title.x = element_blank(), legend.title = element_blank()) +
+  ggtitle("Raw data") 
+
+# transform into relative data
+Nm_fusion$value_relative = NA
+for (i in 1:nrow(Nm_fusion)){
+  Nm_fusion$value_relative[i] = Nm_fusion$value[i] / 
+    Nm_fusion[Nm_fusion$replicate_bio == Nm_fusion$replicate_bio[i] & 
+              Nm_fusion$conditions == Nm_fusion$conditions[i] &
+              Nm_fusion$variable == Nm_fusion$variable[i] &
+              Nm_fusion$virus == "NiV", "value"]
+}
+remove(i)
+
+# plot relative data
+ggplot(Nm_fusion, aes(x = virus, y = value_relative)) +
+  geom_point(size = 1, alpha = 0.7, position=position_dodge(width = .25), color = "grey", shape = 17) +
+  stat_summary(fun.data = mean_sdl, fun.args = list(mult = 1), alpha = 0.7, shape = 24, fill = "black") + 
+  scale_x_discrete(labels = c("Vector", "NiV WT", "167", "170")) +
+  scale_y_continuous(name = "Fusion", limits = c(-0.01,5), breaks = seq(0, 5, 1), labels = scales::percent) +
+  ggtheme + theme(axis.title.x = element_blank(), legend.title = element_blank()) +
+  ggtitle("Relative data") 
+
+```
+
+### 2.1.4. NiV mutant receptor binding
+
+```{r, warning = F, fig.width = 24 / 2.54, fig.height = 7 / 2.54}
+
+Nm_binding = subset(data, experiment == "binding NiV mutants",
+             select = -c(experiment))
+
+# remove background noise
+background = mean(Nm_binding[Nm_binding$virus == "Vector", "value"])
+Nm_binding$value = Nm_binding$value - background
+remove(background)
+
+# plot raw data
+ggplot(Nm_binding, aes(x = virus, y = value)) +
+  geom_point(size = 1, alpha = 0.7, position=position_dodge(width = .25), color = "grey", shape = 15) +
+  stat_summary(fun.data = mean_sdl, fun.args = list(mult = 1), alpha = 0.7, shape = 15) + 
+  scale_x_discrete(labels = c("Vector", "NiV WT", "167", "170")) +
+  scale_y_continuous(name = "Binding") +
+  ggtheme + theme(axis.title.x = element_blank(), legend.title = element_blank()) +
+  ggtitle("Raw data") 
+
+# transform into relative data
+Nm_binding$value_relative = NA
+for (i in 1:nrow(Nm_binding)){
+  Nm_binding$value_relative[i] = Nm_binding$value[i] / 
+    Nm_binding[Nm_binding$replicate_bio == Nm_binding$replicate_bio[i] & 
+              Nm_binding$conditions == Nm_binding$conditions[i] &
+              Nm_binding$variable == Nm_binding$variable[i] &
+              Nm_binding$virus == "NiV", "value"]
+}
+remove(i)
+
+# plot relative data
+ggplot(Nm_binding, aes(x = virus, y = value_relative)) +
+  geom_point(size = 1, alpha = 0.7, position=position_dodge(width = .25), color = "grey", shape = 15) +
+  stat_summary(fun.data = mean_sdl, fun.args = list(mult = 1), alpha = 0.7, shape = 15) + 
+  scale_x_discrete(labels = c("Vector", "NiV WT", "167", "170")) +
+  scale_y_continuous(name = "Binding", limits = c(-0.01,1), breaks = seq(0, 1, 0.25), labels = scales::percent) +
+  ggtheme + theme(axis.title.x = element_blank(), legend.title = element_blank()) +
+  ggtitle("Relative data") 
+
+```
+
+### 2.1.5. HeV mutant fusion
+
+```{r, warning = F, fig.width = 24 / 2.54, fig.height = 7 / 2.54}
+
+# subset data of interest
+Hm_fusion = subset(data, experiment == "fusion HeV mutants",
+             select = -c(experiment))
+
+# calculate mean across technical replicates for figures
+Hm_fusion_aggr = aggregate(value ~ variable + virus + replicate_bio, data = Hm_fusion, mean)
+
+# plot raw data
+ggplot(Hm_fusion, aes(x = virus, y = value)) +
+  geom_point(size = 1, alpha = 0.7, position=position_dodge(width = .25), color = "grey", shape = 17) +
+  stat_summary(fun.data = mean_sdl, fun.args = list(mult = 1), alpha = 0.7, shape = 24, fill = "black") + 
+  scale_x_discrete(labels = c("Vector", "HeV WT", "167", "170")) +
+  scale_y_continuous(name = "Fusion") +
+  ggtheme + theme(axis.title.x = element_blank(), legend.title = element_blank()) +
+  ggtitle("Raw data") 
+
+# transform into relative data
+Hm_fusion_aggr$value_relative = NA
+for (i in 1:nrow(Hm_fusion_aggr)){
+  Hm_fusion_aggr$value_relative[i] = Hm_fusion_aggr$value[i] / 
+    Hm_fusion_aggr[Hm_fusion_aggr$replicate_bio == Hm_fusion_aggr$replicate_bio[i] & 
+              Hm_fusion_aggr$variable == Hm_fusion_aggr$variable[i] &
+              Hm_fusion_aggr$virus == "HeV", "value"]
+}
+remove(i)
+
+# plot relative data
+ggplot(Hm_fusion_aggr, aes(x = virus, y = value_relative)) +
+  geom_point(size = 1, alpha = 0.7, position=position_dodge(width = .25), color = "grey", shape = 17) +
+  stat_summary(fun.data = mean_sdl, fun.args = list(mult = 1), alpha = 0.7, shape = 24, fill = "black") + 
+  scale_x_discrete(labels = c("Vector", "HeV WT", "167", "170")) +
+  scale_y_continuous(name = "Fusion", limits = c(-0.01,2), breaks = seq(0, 2, 0.5), labels = scales::percent) +
+  ggtheme + theme(axis.title.x = element_blank(), legend.title = element_blank()) +
+  ggtitle("Relative data") 
+
+```
+
+### 2.1.6. HeV mutant receptor binding
+
+```{r, warning = F, fig.width = 24 / 2.54, fig.height = 7 / 2.54}
+
+Hm_binding = subset(data, experiment == "binding HeV mutants",
+             select = -c(experiment))
+
+# remove background noise
+background = mean(Hm_binding[Hm_binding$virus == "Vector", "value"])
+Hm_binding$value = Hm_binding$value - background
+remove(background)
+
+# plot raw data
+ggplot(Hm_binding, aes(x = virus, y = value)) +
+  geom_point(size = 1, alpha = 0.7, position=position_dodge(width = .25), color = "grey", shape = 15) +
+  stat_summary(fun.data = mean_sdl, fun.args = list(mult = 1), alpha = 0.7, shape = 15) + 
+  scale_x_discrete(labels = c("Vector", "HeV WT", "167", "170")) +
+  scale_y_continuous(name = "Binding") +
+  ggtheme + theme(axis.title.x = element_blank(), legend.title = element_blank()) +
+  ggtitle("Raw data") 
+
+# transform into relative data
+Hm_binding$value_relative = NA
+for (i in 1:nrow(Hm_binding)){
+  Hm_binding$value_relative[i] = Hm_binding$value[i] / 
+    Hm_binding[Hm_binding$replicate_bio == Hm_binding$replicate_bio[i] & 
+              Hm_binding$conditions == Hm_binding$conditions[i] &
+              Hm_binding$variable == Hm_binding$variable[i] &
+              Hm_binding$virus == "HeV", "value"]
+}
+remove(i)
+
+# plot relative data
+ggplot(Hm_binding, aes(x = virus, y = value_relative)) +
+  geom_point(size = 1, alpha = 0.7, position=position_dodge(width = .25), color = "grey", shape = 15) +
+  stat_summary(fun.data = mean_sdl, fun.args = list(mult = 1), alpha = 0.7, shape = 15) + 
+  scale_x_discrete(labels = c("Vector", "HeV WT", "167", "170")) +
+  scale_y_continuous(name = "Binding", limits = c(-0.01,2), breaks = seq(0, 2, 0.5), labels = scales::percent) +
+  ggtheme + theme(axis.title.x = element_blank(), legend.title = element_blank()) +
+  ggtitle("Relative data") 
+
+```
+ 
+## 2.2. Publication figure
+
+```{r, fig.show = 'hide'}
+
+plot_1 = ggplot(Cm_fusion, aes(x = virus, y = value_relative, fill = conditions, group = conditions)) +
+  geom_point(size = 1, alpha = 0.7, position=position_dodge(width = .25), color = "grey", shape = 17) +
+  stat_summary(fun.data = mean_sdl, fun.args = list(mult = 1), position=position_dodge(width = .25), alpha = 0.7, shape = 24, size = 0.25) + 
+  scale_x_discrete(labels = c("Vector", "CedV\nWT", "188", "190", "193", "196", "199", "202")) +
+  scale_y_continuous(name = "Fusion", limits = c(-0.01,5), breaks = seq(0, 5, 1), labels = scales::percent) +
+  scale_fill_manual(values = c("black", "white")) +
+  ggtheme + theme(axis.title.x = element_blank(), legend.title = element_blank()) +
+  theme(legend.position = c(0.005, 1.05), legend.justification = c(0, 1)) +
+  theme(axis.text.x = element_blank())
+
+plot_2 = ggplot(Nm_fusion, aes(x = virus, y = value_relative)) +
+  geom_point(size = 1, alpha = 0.7, position=position_dodge(width = .25), color = "grey", shape = 17) +
+  stat_summary(fun.data = mean_sdl, fun.args = list(mult = 1), alpha = 0.7, shape = 24, fill = "black", size = 0.25) + 
+  scale_x_discrete(labels = c("Vector", "NiV\nWT", "167", "170")) +
+  scale_y_continuous(name = "Fusion", limits = c(-0.01,5), breaks = seq(0, 5, 1), labels = scales::percent) +
+  ggtheme + theme(axis.title.x = element_blank(), legend.title = element_blank()) +
+  theme(axis.text.x = element_blank(), axis.title.y = element_blank(), axis.text.y = element_blank())
+
+plot_3=ggplot(Hm_fusion_aggr, aes(x = virus, y = value_relative)) +
+  geom_point(size = 1, alpha = 0.7, position=position_dodge(width = .25), color = "grey", shape = 17) +
+  stat_summary(fun.data = mean_sdl, fun.args = list(mult = 1), alpha = 0.7, shape = 24, fill = "black", size = 0.25) + 
+  scale_x_discrete(labels = c("Vector", "HeV\nWT", "167", "170")) +
+  scale_y_continuous(name = "Fusion", limits = c(-0.01,5), breaks = seq(0, 5, 1), labels = scales::percent) +
+  ggtheme + theme(axis.title.x = element_blank(), legend.title = element_blank()) +
+  theme(axis.text.x = element_blank(), axis.title.y = element_blank(), axis.text.y = element_blank())
+
+plot_4 = ggplot(Cm_binding, aes(x = virus, y = value_relative)) +
+  geom_point(size = 1, alpha = 0.7, position=position_dodge(width = .25), color = "grey", shape = 15) +
+  stat_summary(fun.data = mean_sdl, fun.args = list(mult = 1), alpha = 0.7, shape = 15, size = 0.25) + 
+  scale_x_discrete(labels = c("Vector", "CedV\nWT", "188", "190", "193", "196", "199", "202")) +
+  scale_y_continuous(name = "Binding", limits = c(-0.01,1.1), breaks = seq(0, 1, 0.5), labels = scales::percent) +
+  ggtheme + theme(axis.title.x = element_blank(), legend.title = element_blank()) 
+
+plot_5 = ggplot(Nm_binding, aes(x = virus, y = value_relative)) +
+  geom_point(size = 1, alpha = 0.7, position=position_dodge(width = .25), color = "grey", shape = 15) +
+  stat_summary(fun.data = mean_sdl, fun.args = list(mult = 1), alpha = 0.7, shape = 15, size = 0.25) + 
+  scale_x_discrete(labels = c("Vector", "NiV\nWT", "167", "170")) +
+  scale_y_continuous(name = "Binding", limits = c(-0.01,1.1), breaks = seq(0, 1, 0.5), labels = scales::percent) +
+  ggtheme + theme(axis.title.x = element_blank(), axis.title.y = element_blank(), axis.text.y = element_blank(), legend.title = element_blank())
+
+plot_6 = ggplot(Hm_binding, aes(x = virus, y = value_relative)) +
+  geom_point(size = 1, alpha = 0.7, position=position_dodge(width = .25), color = "grey", shape = 15) +
+  stat_summary(fun.data = mean_sdl, fun.args = list(mult = 1), alpha = 0.7, shape = 15, size = 0.25) + 
+  scale_x_discrete(labels = c("Vector", "HeV\nWT", "167", "170")) +
+  scale_y_continuous(name = "Binding", limits = c(-0.01,1.1), breaks = seq(0, 1, 0.5), labels = scales::percent) +
+  ggtheme + theme(axis.title.x = element_blank(), axis.title.y = element_blank(), axis.text.y = element_blank(), legend.title = element_blank())
+
+# ASSEMBLE
+
+plot_top = (plot_1 | plot_2 | plot_3) + plot_layout(ncol = 3, widths = c(1,0.5, 0.5))
+plot_lower = (plot_4 | plot_5 | plot_6) + plot_layout(ncol = 3, widths = c(1,0.5, 0.5))
+
+# complete assemblage
+patchwork = (plot_top / plot_lower)  + 
+  plot_layout(nrow = 2, heights = c(1,0.3)) & theme(plot.tag = element_text(size = 8, face = "bold"))  
+
+# print figure
+# patchwork
+
+# save figure
+ggsave(paste0("export/CedV_fusion_", "Fig3", ".pdf"),
+       width = 15.5, height = 8, units = "cm", dpi = 600)
+
+```
+
+## 2.3. Statistical analyses
+
+### 2.3.1. CedV mutant fusion in HEK 293T
+
+Homo: under the homoscedasticity assumption; Hetero: under the heteroscedasticity assumption
+
+```{r}
+
+# Tests
+
+test_1_homo = lme(value ~ virus, random = ~ 1|replicate_bio,
+                    data = subset(Cm_fusion, conditions == "HEK 293T"),
+                    method = "ML")
+
+test_1_hetero = lme(value ~ virus, random = ~ 1|replicate_bio,
+                    data = subset(Cm_fusion, conditions == "HEK 293T"),
+                    method = "ML",
+                    weights = varIdent(form = ~ 1|virus))
+
+anova(test_1_homo, test_1_hetero)
+anova(test_1_hetero)
+
+tukey_1 = lsmeans(test_1_hetero, pairwise ~ virus, adjust = "tukey")
+
+# Store and format results
+
+stats = as.data.frame(anova(test_1_hetero)[2, ])
+
+stats$variable = c("Fusion")
+
+stats$comparison = NA
+
+stats$test = "Wald test (F-value)"
+
+stats$Value = NA
+stats$Std.Error = NA
+
+stats = stats[, c("variable", "comparison", "test", "F-value", "p-value", "Value", "Std.Error")]
+colnames(stats) = c("Variable", "Comparison", "Test", "Statistics", "p_value", "Estimate", "se")
+
+tukey = as.data.frame(tukey_1[[2]])
+
+tukey$variable = c("Fusion")
+
+tukey$test = "Tukey pairwise Comparison (t-ratio)"
+
+tukey = tukey[, c("variable", "contrast", "test", "t.ratio", "p.value", "estimate", "SE")]
+colnames(tukey) = c("Variable", "Comparison", "Test", "Statistics", "p_value", "Estimate", "se")
+
+stats = rbind(stats, tukey)
+
+stats = stats[order(stats$Variable), ]
+
+stats = stats %>% mutate_if(is.numeric, round, digits = 2)
+
+stats[stats$p_value < 0.001, "p_value"] = "< 0.001"
+
+stats$Estimate = paste0(stats$Estimate, " ± ", stats$se)
+
+stats = stats[, c("Variable", "Comparison", "Test", "Statistics", "p_value", "Estimate")]
+stats[stats$Estimate == ("NA ± NA"), "Estimate"] = NA
+
+kable(stats, digits = 2, row.names = F) %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"))
+
+```
+
+### 2.3.2. CedV mutant fusion in CHO pgsA-745
+
+Homo: under the homoscedasticity assumption; Hetero: under the heteroscedasticity assumption
+
+```{r}
+
+# Tests
+
+test_1_homo = lme(value ~ virus, random = ~ 1|replicate_bio,
+                    data = subset(Cm_fusion, conditions == "CHO pgsA-745"),
+                    method = "ML")
+
+test_1_hetero = lme(value ~ virus, random = ~ 1|replicate_bio,
+                    data = subset(Cm_fusion, conditions == "CHO pgsA-745"),
+                    method = "ML",
+                    weights = varIdent(form = ~ 1|virus))
+
+anova(test_1_homo, test_1_hetero)
+anova(test_1_hetero)
+
+tukey_1 = lsmeans(test_1_hetero, pairwise ~ virus, adjust = "tukey")
+
+# Store and format results
+
+stats = as.data.frame(anova(test_1_hetero)[2, ])
+
+stats$variable = c("Fusion")
+
+stats$comparison = NA
+
+stats$test = "Wald test (F-value)"
+
+stats$Value = NA
+stats$Std.Error = NA
+
+stats = stats[, c("variable", "comparison", "test", "F-value", "p-value", "Value", "Std.Error")]
+colnames(stats) = c("Variable", "Comparison", "Test", "Statistics", "p_value", "Estimate", "se")
+
+tukey = as.data.frame(tukey_1[[2]])
+
+tukey$variable = c("Fusion")
+
+tukey$test = "Tukey pairwise Comparison (t-ratio)"
+
+tukey = tukey[, c("variable", "contrast", "test", "t.ratio", "p.value", "estimate", "SE")]
+colnames(tukey) = c("Variable", "Comparison", "Test", "Statistics", "p_value", "Estimate", "se")
+
+stats = rbind(stats, tukey)
+
+stats = stats[order(stats$Variable), ]
+
+stats = stats %>% mutate_if(is.numeric, round, digits = 2)
+
+stats[stats$p_value < 0.001, "p_value"] = "< 0.001"
+
+stats$Estimate = paste0(stats$Estimate, " ± ", stats$se)
+
+stats = stats[, c("Variable", "Comparison", "Test", "Statistics", "p_value", "Estimate")]
+stats[stats$Estimate == ("NA ± NA"), "Estimate"] = NA
+
+kable(stats, digits = 2, row.names = F) %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"))
+
+```
+
+### 2.3.3. CedV mutant receptor binding
+
+Homo: under the homoscedasticity assumption; Hetero: under the heteroscedasticity assumption
+
+```{r}
+
+# Tests
+
+test_1_homo = lme(value ~ virus, random = ~ 1|replicate_bio,
+                    data = Cm_binding,
+                    method = "ML")
+
+test_1_hetero = lme(value ~ virus, random = ~ 1|replicate_bio,
+                    data = Cm_binding,
+                    method = "ML",
+                    weights = varIdent(form = ~ 1|virus))
+
+anova(test_1_homo, test_1_hetero)
+anova(test_1_hetero)
+
+tukey_1 = lsmeans(test_1_hetero, pairwise ~ virus, adjust = "tukey")
+
+# Store and format results
+
+stats = as.data.frame(anova(test_1_hetero)[2, ])
+
+stats$variable = c("Ephrin-B2 binding")
+
+stats$comparison = NA
+
+stats$test = "Wald test (F-value)"
+
+stats$Value = NA
+stats$Std.Error = NA
+
+stats = stats[, c("variable", "comparison", "test", "F-value", "p-value", "Value", "Std.Error")]
+colnames(stats) = c("Variable", "Comparison", "Test", "Statistics", "p_value", "Estimate", "se")
+
+tukey = as.data.frame(tukey_1[[2]])
+
+tukey$variable = c("Ephrin-B2 binding")
+
+tukey$test = "Tukey pairwise Comparison (t-ratio)"
+
+tukey = tukey[, c("variable", "contrast", "test", "t.ratio", "p.value", "estimate", "SE")]
+colnames(tukey) = c("Variable", "Comparison", "Test", "Statistics", "p_value", "Estimate", "se")
+
+stats = rbind(stats, tukey)
+
+stats = stats[order(stats$Variable), ]
+
+stats = stats %>% mutate_if(is.numeric, round, digits = 2)
+
+stats[stats$p_value < 0.001, "p_value"] = "< 0.001"
+
+stats$Estimate = paste0(stats$Estimate, " ± ", stats$se)
+
+stats = stats[, c("Variable", "Comparison", "Test", "Statistics", "p_value", "Estimate")]
+stats[stats$Estimate == ("NA ± NA"), "Estimate"] = NA
+
+kable(stats, digits = 2, row.names = F) %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"))
+
+```
+
+### 2.3.4. NiV mutant fusion
+
+Homo: under the homoscedasticity assumption; Hetero: under the heteroscedasticity assumption
+
+```{r}
+
+# Tests
+
+test_1_homo = lme(value ~ virus, random = ~ 1|replicate_bio,
+                    data = Nm_fusion,
+                    method = "ML")
+
+test_1_hetero = lme(value ~ virus, random = ~ 1|replicate_bio,
+                    data = Nm_fusion,
+                    method = "ML",
+                    weights = varIdent(form = ~ 1|virus))
+
+anova(test_1_homo, test_1_hetero)
+anova(test_1_hetero)
+
+tukey_1 = lsmeans(test_1_hetero, pairwise ~ virus, adjust = "tukey")
+
+# Store and format results
+
+stats = as.data.frame(anova(test_1_hetero)[2, ])
+
+stats$variable = c("Fusion")
+
+stats$comparison = NA
+
+stats$test = "Wald test (F-value)"
+
+stats$Value = NA
+stats$Std.Error = NA
+
+stats = stats[, c("variable", "comparison", "test", "F-value", "p-value", "Value", "Std.Error")]
+colnames(stats) = c("Variable", "Comparison", "Test", "Statistics", "p_value", "Estimate", "se")
+
+tukey = as.data.frame(tukey_1[[2]])
+
+tukey$variable = c("Fusion")
+
+tukey$test = "Tukey pairwise Comparison (t-ratio)"
+
+tukey = tukey[, c("variable", "contrast", "test", "t.ratio", "p.value", "estimate", "SE")]
+colnames(tukey) = c("Variable", "Comparison", "Test", "Statistics", "p_value", "Estimate", "se")
+
+stats = rbind(stats, tukey)
+
+stats = stats[order(stats$Variable), ]
+
+stats = stats %>% mutate_if(is.numeric, round, digits = 2)
+
+stats[stats$p_value < 0.001, "p_value"] = "< 0.001"
+
+stats$Estimate = paste0(stats$Estimate, " ± ", stats$se)
+
+stats = stats[, c("Variable", "Comparison", "Test", "Statistics", "p_value", "Estimate")]
+stats[stats$Estimate == ("NA ± NA"), "Estimate"] = NA
+
+kable(stats, digits = 2, row.names = F) %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"))
+
+```
+
+### 2.3.5. NiV mutant receptor binding
+
+Homo: under the homoscedasticity assumption; Hetero: under the heteroscedasticity assumption
+
+```{r}
+
+# Tests
+
+test_1_homo = lme(value ~ virus, random = ~ 1|replicate_bio,
+                    data = Nm_binding,
+                    method = "ML")
+
+test_1_hetero = lme(value ~ virus, random = ~ 1|replicate_bio,
+                    data = Nm_binding,
+                    method = "ML",
+                    weights = varIdent(form = ~ 1|virus))
+
+anova(test_1_homo, test_1_hetero)
+anova(test_1_hetero)
+
+tukey_1 = lsmeans(test_1_hetero, pairwise ~ virus, adjust = "tukey")
+
+# Store and format results
+
+stats = as.data.frame(anova(test_1_hetero)[2, ])
+
+stats$variable = c("Ephrin-B2 binding")
+
+stats$comparison = NA
+
+stats$test = "Wald test (F-value)"
+
+stats$Value = NA
+stats$Std.Error = NA
+
+stats = stats[, c("variable", "comparison", "test", "F-value", "p-value", "Value", "Std.Error")]
+colnames(stats) = c("Variable", "Comparison", "Test", "Statistics", "p_value", "Estimate", "se")
+
+tukey = as.data.frame(tukey_1[[2]])
+
+tukey$variable = c("Ephrin-B2 binding")
+
+tukey$test = "Tukey pairwise Comparison (t-ratio)"
+
+tukey = tukey[, c("variable", "contrast", "test", "t.ratio", "p.value", "estimate", "SE")]
+colnames(tukey) = c("Variable", "Comparison", "Test", "Statistics", "p_value", "Estimate", "se")
+
+stats = rbind(stats, tukey)
+
+stats = stats[order(stats$Variable), ]
+
+stats = stats %>% mutate_if(is.numeric, round, digits = 2)
+
+stats[stats$p_value < 0.001, "p_value"] = "< 0.001"
+
+stats$Estimate = paste0(stats$Estimate, " ± ", stats$se)
+
+stats = stats[, c("Variable", "Comparison", "Test", "Statistics", "p_value", "Estimate")]
+stats[stats$Estimate == ("NA ± NA"), "Estimate"] = NA
+
+kable(stats, digits = 2, row.names = F) %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"))
+
+```
+
+### 2.3.6. HeV mutant fusion
+
+Homo: under the homoscedasticity assumption; Hetero: under the heteroscedasticity assumption
+
+```{r}
+
+# Tests
+
+test_1_homo = lme(value ~ virus, random = ~ 1|replicate_bio,
+                    data = Hm_fusion,
+                    method = "ML")
+
+test_1_hetero = lme(value ~ virus, random = ~ 1|replicate_bio,
+                    data = Hm_fusion,
+                    method = "ML",
+                    weights = varIdent(form = ~ 1|virus))
+
+anova(test_1_homo, test_1_hetero)
+anova(test_1_hetero)
+
+tukey_1 = lsmeans(test_1_hetero, pairwise ~ virus, adjust = "tukey")
+
+# Store and format results
+
+stats = as.data.frame(anova(test_1_hetero)[2, ])
+
+stats$variable = c("Fusion")
+
+stats$comparison = NA
+
+stats$test = "Wald test (F-value)"
+
+stats$Value = NA
+stats$Std.Error = NA
+
+stats = stats[, c("variable", "comparison", "test", "F-value", "p-value", "Value", "Std.Error")]
+colnames(stats) = c("Variable", "Comparison", "Test", "Statistics", "p_value", "Estimate", "se")
+
+tukey = as.data.frame(tukey_1[[2]])
+
+tukey$variable = c("Fusion")
+
+tukey$test = "Tukey pairwise Comparison (t-ratio)"
+
+tukey = tukey[, c("variable", "contrast", "test", "t.ratio", "p.value", "estimate", "SE")]
+colnames(tukey) = c("Variable", "Comparison", "Test", "Statistics", "p_value", "Estimate", "se")
+
+stats = rbind(stats, tukey)
+
+stats = stats[order(stats$Variable), ]
+
+stats = stats %>% mutate_if(is.numeric, round, digits = 2)
+
+stats[stats$p_value < 0.001, "p_value"] = "< 0.001"
+
+stats$Estimate = paste0(stats$Estimate, " ± ", stats$se)
+
+stats = stats[, c("Variable", "Comparison", "Test", "Statistics", "p_value", "Estimate")]
+stats[stats$Estimate == ("NA ± NA"), "Estimate"] = NA
+
+kable(stats, digits = 2, row.names = F) %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"))
+
+```
+
+### 2.3.8. HeV mutant receptor binding
+
+Homo: under the homoscedasticity assumption; Hetero: under the heteroscedasticity assumption
+
+```{r}
+
+# Tests
+
+test_1_homo = lme(value ~ virus, random = ~ 1|replicate_bio,
+                    data = Hm_binding,
+                    method = "ML")
+
+test_1_hetero = lme(value ~ virus, random = ~ 1|replicate_bio,
+                    data = Hm_binding,
+                    method = "ML",
+                    weights = varIdent(form = ~ 1|virus))
+
+anova(test_1_homo, test_1_hetero)
+anova(test_1_hetero)
+
+tukey_1 = lsmeans(test_1_hetero, pairwise ~ virus, adjust = "tukey")
+
+# Store and format results
+
+stats = as.data.frame(anova(test_1_hetero)[2, ])
+
+stats$variable = c("Ephrin-B2 binding")
+
+stats$comparison = NA
+
+stats$test = "Wald test (F-value)"
+
+stats$Value = NA
+stats$Std.Error = NA
+
+stats = stats[, c("variable", "comparison", "test", "F-value", "p-value", "Value", "Std.Error")]
+colnames(stats) = c("Variable", "Comparison", "Test", "Statistics", "p_value", "Estimate", "se")
+
+tukey = as.data.frame(tukey_1[[2]])
+
+tukey$variable = c("Ephrin-B2 binding")
+
+tukey$test = "Tukey pairwise Comparison (t-ratio)"
+
+tukey = tukey[, c("variable", "contrast", "test", "t.ratio", "p.value", "estimate", "SE")]
+colnames(tukey) = c("Variable", "Comparison", "Test", "Statistics", "p_value", "Estimate", "se")
+
+stats = rbind(stats, tukey)
+
+stats = stats[order(stats$Variable), ]
+
+stats = stats %>% mutate_if(is.numeric, round, digits = 2)
+
+stats[stats$p_value < 0.001, "p_value"] = "< 0.001"
+
+stats$Estimate = paste0(stats$Estimate, " ± ", stats$se)
+
+stats = stats[, c("Variable", "Comparison", "Test", "Statistics", "p_value", "Estimate")]
+stats[stats$Estimate == ("NA ± NA"), "Estimate"] = NA
+
+kable(stats, digits = 2, row.names = F) %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"))
+
+```
+
+```{r}
+
+# clean working space
+remove(Cm_fusion, Cm_binding, Nm_fusion, Nm_binding, Nm_fusion_aggr, Hm_fusion, Hm_binding, Hm_fusion_aggr)
+remove(plot_1, plot_2, plot_3, plot_4, plot_5, plot_6, plot_top, plot_lower, patchwork)
+remove(test_1_hetero, test_1_homo, tukey_1, stats, tukey)
+
+```
+
+# 3. Tag effect exploration (Figure 4)
+
+## 3.1. Data exploration
+
+### 3.1.1. CedV CSE and fusion 
+
+```{r, warning = F, fig.width = 24 / 2.54, fig.height = 7 / 2.54}
+
+# subset data of interest
+Ct = subset(data, experiment == "fusogenicity selected tagged CedV mutants",
+             select = -c(experiment))
+
+# calculate mean across technical replicates for figures
+Ct_CSE_fusion_aggr = aggregate(value ~ variable + conditions + virus + replicate_bio + tag, data = Ct, mean)
+
+Ct_CSE_fusion_aggr$group = paste0(Ct_CSE_fusion_aggr$tag, "_", Ct_CSE_fusion_aggr$variable)
+
+Ct_CSE_fusion_aggr$group = factor(Ct_CSE_fusion_aggr$group, levels = c("HA_CSE_G", "HA_CSE_F", "HA_fusion_mean", "none_fusion_mean" ))
+
+# plot raw data
+ggplot(Ct_CSE_fusion_aggr, aes(x = virus, y = value, color = group, fill = group, shape = group, group = group)) +
+  geom_point(size = 1, alpha = 0.7, position=position_dodge(width = 0.25), color = "grey", fill = "grey") +
+  stat_summary(fun.data = mean_sdl, fun.args = list(mult = 1), position=position_dodge(width = 0.25), alpha = 0.7) + 
+  scale_x_discrete(labels = c("CedV", "193")) +
+  scale_y_continuous(name = "Cell surface expression (CSE)", 
+                     sec.axis = sec_axis(~ . * 1, name="Fusion")) +
+  scale_shape_manual(values = c(19, 19, 24, 24), labels = c("G CSE", "F CSE", "Fusion - HA-tagged", "Fusion - Untagged")) +
+  scale_color_manual(values = c("#67a9cf", "#ef8a62", "black", "black"), labels = c("G CSE", "F CSE", "Fusion - HA-tagged", "Fusion - Untagged")) +
+  scale_fill_manual(values = c("#67a9cf", "#ef8a62", "black", "white"), labels = c("G CSE", "F CSE", "Fusion - HA-tagged", "Fusion - Untagged")) +
+  ggtheme + theme(axis.title.x = element_blank(), legend.title = element_blank()) +
+  ggtitle("Raw data") 
+
+# transform into relative data
+Ct_CSE_fusion_aggr$value_relative = NA
+for (i in 1:nrow(Ct_CSE_fusion_aggr)){
+  Ct_CSE_fusion_aggr$value_relative[i] = Ct_CSE_fusion_aggr$value[i] / 
+    Ct_CSE_fusion_aggr[Ct_CSE_fusion_aggr$replicate_bio == Ct_CSE_fusion_aggr$replicate_bio[i] & 
+              Ct_CSE_fusion_aggr$conditions == Ct_CSE_fusion_aggr$conditions[i] &
+              Ct_CSE_fusion_aggr$variable == Ct_CSE_fusion_aggr$variable[i] &
+              Ct_CSE_fusion_aggr$virus == "CedV", "value"]
+}
+remove(i)
+
+# plot relative data
+ggplot(Ct_CSE_fusion_aggr, aes(x = virus, y = value_relative, color = group, fill = group, shape = group, group = group)) +
+  geom_point(size = 1, alpha = 0.7, position=position_dodge(width = 0.25), color = "grey", fill = "grey") +
+  stat_summary(fun.data = mean_sdl, fun.args = list(mult = 1), position=position_dodge(width = 0.25), alpha = 0.7) + 
+  scale_x_discrete(labels = c("CedV", "193")) +
+  scale_y_continuous(name = "Cell surface expression (CSE)", limits = c(-0.01, 5), breaks = seq(0, 5, 1), labels = scales::percent, 
+                     sec.axis = sec_axis(~ . * 1, name="Fusion", breaks = seq(0, 5, 1), labels = scales::percent)) +
+  scale_shape_manual(values = c(19, 19, 24, 24), labels = c("G CSE", "F CSE", "Fusion - HA-tagged", "Fusion - Untagged")) +
+  scale_color_manual(values = c("#67a9cf", "#ef8a62", "black", "black"), labels = c("G CSE", "F CSE", "Fusion - HA-tagged", "Fusion - Untagged")) +
+  scale_fill_manual(values = c("#67a9cf", "#ef8a62", "black", "white"), labels = c("G CSE", "F CSE", "Fusion - HA-tagged", "Fusion - Untagged")) +
+  ggtheme + theme(axis.title.x = element_blank(), legend.title = element_blank()) +
+  ggtitle("Relative data") 
+
+```
+
+### 3.1.2. CedV fusion index 
+
+```{r, warning = F, fig.width = 24 / 2.54, fig.height = 7 / 2.54}
+
+# fusion index
+Ct_FI = pivot_wider(names_from = variable, values_from = value, data = Ct)
+
+Ct_FI[Ct_FI$virus == "CedV_193" & is.na(Ct_FI$CSE_G), "CSE_G"] = Ct_FI[Ct_FI$virus == "CedV_193" & !is.na(Ct_FI$CSE_G), "CSE_G"]
+Ct_FI[Ct_FI$virus == "CedV_193" & is.na(Ct_FI$CSE_F), "CSE_F"] = Ct_FI[Ct_FI$virus == "CedV_193" & !is.na(Ct_FI$CSE_F), "CSE_F"]
+
+Ct_FI$FI_G = Ct_FI$fusion_mean / Ct_FI$CSE_G
+Ct_FI$FI_F = Ct_FI$fusion_mean / Ct_FI$CSE_F
+Ct_FI = pivot_longer(cols = c(FI_G, FI_F), names_to = "variable", values_to = "value", data = Ct_FI)
+Ct_FI$variable = factor(Ct_FI$variable, levels = c("FI_G", "FI_F"))
+
+# calculate mean across technical replicates for figures
+Ct_FI_aggr = aggregate(value ~ variable + conditions + virus + replicate_bio + tag, data = Ct_FI, mean)
+
+Ct_FI_aggr$group = paste0(Ct_FI_aggr$tag, "_", Ct_FI_aggr$variable)
+
+Ct_FI_aggr$group = factor(Ct_FI_aggr$group, levels = c("HA_FI_G", "HA_FI_F", "none_FI_G", "none_FI_F" ))
+
+# plot raw data
+ggplot(Ct_FI_aggr, aes(x = virus, y = value, color = group, fill = group, group = group)) +
+  geom_point(size = 1, alpha = 0.7, position=position_dodge(width = 0.25), color = "grey", shape = 17) +
+  stat_summary(fun.data = mean_sdl, fun.args = list(mult = 1), position=position_dodge(width = 0.25), alpha = 0.7, shape = 24) + 
+  scale_x_discrete(labels = c("CedV", "193")) +
+  scale_y_continuous(name = "Fusion index") +
+  scale_color_manual(values = c("#67a9cf", "#ef8a62", "#67a9cf", "#ef8a62"), labels = c("Fusion index / G - HA-tagged", "Fusion index / F - HA-tagged", "Fusion index / G - Untagged", "Fusion index / F - Untagged")) +
+  scale_fill_manual(values = c("#67a9cf", "#ef8a62", "white", "white"), labels = c("Fusion index / G - HA-tagged", "Fusion index / F - HA-tagged", "Fusion index / G - Untagged", "Fusion index / F - Untagged")) +
+  ggtheme + theme(axis.title.x = element_blank(), legend.title = element_blank()) +
+  ggtitle("Raw data") 
+
+# transform iCto relative data
+Ct_FI_aggr$value_relative = NA
+for (i in 1:nrow(Ct_FI_aggr)){
+  Ct_FI_aggr$value_relative[i] = Ct_FI_aggr$value[i] / 
+    Ct_FI_aggr[Ct_FI_aggr$replicate_bio == Ct_FI_aggr$replicate_bio[i] & 
+              Ct_FI_aggr$conditions == Ct_FI_aggr$conditions[i] &
+              Ct_FI_aggr$variable == Ct_FI_aggr$variable[i] &
+              Ct_FI_aggr$virus == "CedV", "value"]
+}
+remove(i)
+
+# plot relative data
+ggplot(Ct_FI_aggr, aes(x = virus, y = value_relative, color = group, fill = group, group = group)) +
+  geom_point(size = 1, alpha = 0.7, position=position_dodge(width = 0.25), color = "grey", shape = 17) +
+  stat_summary(fun.data = mean_sdl, fun.args = list(mult = 1), position=position_dodge(width = 0.25), alpha = 0.7, shape = 24) + 
+  scale_x_discrete(labels = c("CedV", "193")) +
+  scale_y_continuous(name = "Fusion index", limits = c(-0.01, 4), breaks = seq(0, 4, 1), labels = scales::percent) +
+  scale_color_manual(values = c("#67a9cf", "#ef8a62", "#67a9cf", "#ef8a62"), labels = c("Fusion index / G - HA-tagged", "Fusion index / F - HA-tagged", "Fusion index / G - Untagged", "Fusion index / F - Untagged")) +
+  scale_fill_manual(values = c("#67a9cf", "#ef8a62", "white", "white"), labels = c("Fusion index / G - HA-tagged", "Fusion index / F - HA-tagged", "Fusion index / G - Untagged", "Fusion index / F - Untagged")) +
+  ggtheme + theme(axis.title.x = element_blank(), legend.title = element_blank()) +
+  ggtitle("Relative data") 
+
+```
+
+### 3.1.3. NiV CSE and fusion
+
+```{r, warning = F, fig.width = 24 / 2.54, fig.height = 7 / 2.54}
+
+# subset data of interest
+Nt = subset(data, experiment == "fusogenicity selected NiV mutants",
+             select = -c(experiment))
+
+# calculate mean across technical replicates for figures
+Nt_CSE_fusion_aggr = aggregate(value ~ variable + conditions + virus + replicate_bio + tag, data = Nt, mean)
+
+Nt_CSE_fusion_aggr$group = paste0(Nt_CSE_fusion_aggr$tag, "_", Nt_CSE_fusion_aggr$variable)
+
+Nt_CSE_fusion_aggr$group = factor(Nt_CSE_fusion_aggr$group, levels = c("none_CSE_G", "none_CSE_F", "HA_fusion_mean", "none_fusion_mean" ))
+
+# plot raw data
+ggplot(Nt_CSE_fusion_aggr, aes(x = virus, y = value, color = group, fill = group, shape = group, group =group)) +
+  geom_point(size = 1, alpha = 0.7, position=position_dodge(width = 0.25), color = "grey", fill = "grey") +
+  stat_summary(fun.data = mean_sdl, fun.args = list(mult = 1), position=position_dodge(width = 0.25), alpha = 0.7) + 
+  scale_x_discrete(labels = c("NiV", "167")) +
+  scale_y_continuous(name = "Cell surface expression (CSE)", 
+                     sec.axis = sec_axis(~ . * 1, name="Fusion - Untagged")) +
+  scale_shape_manual(values = c(19, 19, 24, 24), labels = c("G CSE", "F CSE", "Fusion - Tagged", "Fusion - Untagged")) +
+  scale_color_manual(values = c("#67a9cf", "#ef8a62", "black", "black"), labels = c("G CSE", "F CSE", "Fusion - Tagged", "Fusion - Untagged")) +
+  scale_fill_manual(values = c("#67a9cf", "#ef8a62", "black", "white"), labels = c("G CSE", "F CSE", "Fusion - Tagged", "Fusion - Untagged")) +
+  ggtheme + theme(axis.title.x = element_blank(), legend.title = element_blank()) +
+  ggtitle("Raw data") 
+
+# transform into relative data
+Nt_CSE_fusion_aggr$value_relative = NA
+for (i in 1:nrow(Nt_CSE_fusion_aggr)){
+  Nt_CSE_fusion_aggr$value_relative[i] = Nt_CSE_fusion_aggr$value[i] / 
+    Nt_CSE_fusion_aggr[Nt_CSE_fusion_aggr$replicate_bio == Nt_CSE_fusion_aggr$replicate_bio[i] & 
+              Nt_CSE_fusion_aggr$conditions == Nt_CSE_fusion_aggr$conditions[i] &
+              Nt_CSE_fusion_aggr$variable == Nt_CSE_fusion_aggr$variable[i] &
+              Nt_CSE_fusion_aggr$virus == "NiV", "value"]
+}
+remove(i)
+
+# plot relative data
+ggplot(Nt_CSE_fusion_aggr, aes(x = virus, y = value_relative, color = group, fill = group, shape = group, group =group)) +
+  geom_point(size = 1, alpha = 0.7, position=position_dodge(width = 0.25), color = "grey", fill = "grey") +
+  stat_summary(fun.data = mean_sdl, fun.args = list(mult = 1), position=position_dodge(width = 0.25), alpha = 0.7) + 
+  scale_x_discrete(labels = c("NiV", "167")) +
+  scale_y_continuous(name = "Cell surface expression (CSE)", limits = c(-0.01, 5), breaks = seq(0, 5, 1), labels = scales::percent,
+                     sec.axis = sec_axis(~ . * 1, name="Relative fusion", breaks = seq(0, 5, 1), labels = scales::percent)) +
+  scale_shape_manual(values = c(19, 19, 24, 24), labels = c("G CSE", "F CSE", "Fusion - Tagged", "Fusion - Untagged")) +
+  scale_color_manual(values = c("#67a9cf", "#ef8a62", "black", "black"), labels = c("G CSE", "F CSE", "Fusion - Tagged", "Fusion - Untagged")) +
+  scale_fill_manual(values = c("#67a9cf", "#ef8a62", "black", "white"), labels = c("G CSE", "F CSE", "Fusion - Tagged", "Fusion - Untagged"))  +
+  ggtheme + theme(axis.title.x = element_blank(), legend.title = element_blank())+
+  ggtitle("Relative data") 
+
+```
+
+### 3.1.4. NiV fusion index 
+
+```{r, warning = F, fig.width = 24 / 2.54, fig.height = 7 / 2.54}
+
+# fusion index
+Nt_FI = pivot_wider(names_from = variable, values_from = value, data = Nt)
+
+Nt_FI[Nt_FI$virus == "NiV" & is.na(Nt_FI$CSE_G), "CSE_G"] = Nt_FI[Nt_FI$virus == "NiV" & !is.na(Nt_FI$CSE_G), "CSE_G"]
+Nt_FI[Nt_FI$virus == "NiV" & is.na(Nt_FI$CSE_F), "CSE_F"] = Nt_FI[Nt_FI$virus == "NiV" & !is.na(Nt_FI$CSE_F), "CSE_F"]
+
+Nt_FI$FI_G = Nt_FI$fusion_mean / Nt_FI$CSE_G
+Nt_FI$FI_F = Nt_FI$fusion_mean / Nt_FI$CSE_F
+Nt_FI = pivot_longer(cols = c(FI_G, FI_F), names_to = "variable", values_to = "value", data = Nt_FI)
+Nt_FI$variable = factor(Nt_FI$variable, levels = c("FI_G", "FI_F"))
+
+# calculate mean across technical replicates for figures
+Nt_FI_aggr = aggregate(value ~ variable + conditions + virus + replicate_bio + tag, data = Nt_FI, mean)
+
+Nt_FI_aggr$group = paste0(Nt_FI_aggr$tag, "_", Nt_FI_aggr$variable)
+
+Nt_FI_aggr$group = factor(Nt_FI_aggr$group, levels = c("HA_FI_G", "HA_FI_F", "none_FI_G", "none_FI_F" ))
+
+# plot raw data
+ggplot(Nt_FI_aggr, aes(x = virus, y = value, color = group, fill = group, group =group)) +
+  geom_point(size = 1, alpha = 0.7, position=position_dodge(width = 0.25), color = "grey", shape = 17) +
+  stat_summary(fun.data = mean_sdl, fun.args = list(mult = 1), position=position_dodge(width = 0.25), alpha = 0.7, shape = 24) + 
+  scale_x_discrete(labels = c("NiV", "167")) +
+  scale_y_continuous(name = "Fusion index") +
+  scale_color_manual(values = c("#67a9cf", "#ef8a62", "#67a9cf", "#ef8a62"), labels = c("Fusion index / G - Tagged", "Fusion index / F - Tagged", "Fusion index / G - Untagged", "Fusion index / F - Untagged")) +
+  scale_fill_manual(values = c("#67a9cf", "#ef8a62","white", "white"), labels = c("Fusion index / G - Tagged", "Fusion index / F - Tagged", "Fusion index / G - Untagged", "Fusion index / F - Untagged")) +
+  ggtheme + theme(axis.title.x = element_blank(), legend.title = element_blank()) +
+  ggtitle("Raw data") 
+
+# transform into relative data
+Nt_FI_aggr$value_relative = NA
+for (i in 1:nrow(Nt_FI_aggr)){
+  Nt_FI_aggr$value_relative[i] = Nt_FI_aggr$value[i] / 
+    Nt_FI_aggr[Nt_FI_aggr$replicate_bio == Nt_FI_aggr$replicate_bio[i] & 
+              Nt_FI_aggr$conditions == Nt_FI_aggr$conditions[i] &
+              Nt_FI_aggr$variable == Nt_FI_aggr$variable[i] &
+              Nt_FI_aggr$virus == "NiV", "value"]
+}
+remove(i)
+
+# plot relative data
+ggplot(Nt_FI_aggr, aes(x = virus, y = value_relative, color = group, fill = group, group =group)) +
+  geom_point(size = 1, alpha = 0.7, position=position_dodge(width = 0.25), color = "grey", shape = 17) +
+  stat_summary(fun.data = mean_sdl, fun.args = list(mult = 1), position=position_dodge(width = 0.25), alpha = 0.7, shape = 24) + 
+  scale_x_discrete(labels = c("NiV", "167")) +
+  scale_y_continuous(name = "Fusion index", limits = c(-0.01,1.75), breaks = seq(0, 1.75, 0.25), labels = scales::percent) +
+  scale_color_manual(values = c("#67a9cf", "#ef8a62", "#67a9cf", "#ef8a62"), labels = c("Fusion index / G - Tagged", "Fusion index / F - Tagged", "Fusion index / G - Untagged", "Fusion index / F - Untagged")) +
+  scale_fill_manual(values = c("#67a9cf", "#ef8a62","white", "white"), labels = c("Fusion index / G - Tagged", "Fusion index / F - Tagged", "Fusion index / G - Untagged", "Fusion index / F - Untagged")) +
+  ggtheme + theme(axis.title.x = element_blank(), legend.title = element_blank())+
+  ggtitle("Relative data") 
+
+```
+
+### 3.1.5. CedV F CSE with/without tag
+
+```{r, warning = F, fig.width = 24 / 2.54, fig.height = 7 / 2.54}
+
+# subset data of interest
+Ct_FCSE = subset(data, experiment == "CSE selected tagged CedV mutants",
+             select = -c(experiment))
+
+# calculate mean across technical replicates for figures
+Ct_FCSE_aggr = aggregate(value ~ variable + conditions + virus + replicate_bio + tag, data = Ct_FCSE, mean)
+
+Ct_FCSE_aggr$group = paste0(Ct_FCSE_aggr$tag, "_", Ct_FCSE_aggr$variable)
+
+Ct_FCSE_aggr$group = factor(Ct_FCSE_aggr$group, levels = c("HA_CSE_F", "none_CSE_F" ))
+
+Ct_FCSE_fusion_aggr = Ct_FCSE_aggr
+
+# plot raw data
+ggplot(Ct_FCSE_fusion_aggr, aes(x = virus, y = value,  fill = group, group = group)) +
+  geom_point(size = 1, alpha = 0.7, position=position_dodge(width = 0.25), color = "grey", fill = "grey") +
+  stat_summary(fun.data = mean_sdl, fun.args = list(mult = 1), position=position_dodge(width = 0.25), alpha = 0.7, color = "#ef8a62", size = 0.25, shape = 21) + 
+  scale_x_discrete(labels = c("CedV 193")) +
+  scale_y_continuous(name = "F cell surface\nexpression") +
+  scale_fill_manual(values = c("#ef8a62", "white"), labels = c("HA-tagged", "Untagged")) +
+  ggtheme + theme(axis.title.x = element_blank(), legend.title = element_blank()) +
+  ggtitle("Raw data") 
+
+# transform into relative data
+Ct_FCSE_fusion_aggr$value_relative = NA
+for (i in 1:nrow(Ct_FCSE_fusion_aggr)){
+  Ct_FCSE_fusion_aggr$value_relative[i] = Ct_FCSE_fusion_aggr$value[i] / 
+    Ct_FCSE_fusion_aggr[Ct_FCSE_fusion_aggr$replicate_bio == Ct_FCSE_fusion_aggr$replicate_bio[i] & 
+              Ct_FCSE_fusion_aggr$variable == Ct_FCSE_fusion_aggr$variable[i] &
+              Ct_FCSE_fusion_aggr$tag == "none", "value"]
+}
+remove(i)
+
+# plot relative data
+ggplot(Ct_FCSE_fusion_aggr, aes(x = virus, y = value_relative,  fill = group, group = group)) +
+  geom_point(size = 1, alpha = 0.7, position=position_dodge(width = 0.25), color = "grey", fill = "grey") +
+  stat_summary(fun.data = mean_sdl, fun.args = list(mult = 1), position=position_dodge(width = 0.25), alpha = 0.7, color = "#ef8a62", size = 0.25, shape = 21) + 
+  scale_x_discrete(labels = c("CedV 193")) +
+  scale_y_continuous(name = "F cell surface\nexpression",limits = c(-0.01, 1.25), breaks = seq(0, 1.25, 0.5), labels = scales::percent) +
+  scale_fill_manual(values = c("#ef8a62", "white"), labels = c("HA-tagged", "Untagged")) +
+  ggtheme + theme(axis.title.x = element_blank(), legend.title = element_blank())
+
+```
+
+## 3.2. Publication figure
+
+```{r, fig.show = 'hide'}
+
+plot_1 = ggplot(Ct_CSE_fusion_aggr, aes(x = virus, y = value_relative, color = group, fill = group, shape = group, group = group)) +
+  geom_point(size = 1, alpha = 0.7, position=position_dodge(width = 0.25), color = "grey", fill = "grey") +
+  stat_summary(fun.data = mean_sdl, fun.args = list(mult = 1), position=position_dodge(width = 0.25), alpha = 0.7, size = 0.25) + 
+  scale_x_discrete(labels = c("CedV", "193")) +
+  scale_y_continuous(name = "Cell surface\nexpression (CSE)", limits = c(-0.01, 5), breaks = seq(0, 5, 1), labels = scales::percent, 
+                     sec.axis = sec_axis(~ . * 1, name="Fusion", breaks = seq(0, 5, 1), labels = scales::percent)) +
+  scale_shape_manual(values = c(19, 19, 24, 24), labels = c("G CSE", "F CSE", "Fusion - HA-tagged", "Fusion - Untagged")) +
+  scale_color_manual(values = c("#67a9cf", "#ef8a62", "black", "black"), labels = c("G CSE", "F CSE", "Fusion - HA-tagged", "Fusion - Untagged")) +
+  scale_fill_manual(values = c("#67a9cf", "#ef8a62", "black", "white"), labels = c("G CSE", "F CSE", "Fusion - HA-tagged", "Fusion - Untagged")) +
+  ggtheme + theme(axis.title.x = element_blank(), legend.title = element_blank()) +
+  theme(axis.text.x = element_blank(), axis.text.y.right = element_blank(), axis.title.y.right = element_blank())
+
+plot_2 = ggplot(Ct_FI_aggr, aes(x = virus, y = value_relative, color = group, fill = group, group = group)) +
+  geom_point(size = 1, alpha = 0.7, position=position_dodge(width = 0.25), color = "grey", shape = 17) +
+  stat_summary(fun.data = mean_sdl, fun.args = list(mult = 1), position=position_dodge(width = 0.25), alpha = 0.7, shape = 24, size = 0.25) + 
+  scale_x_discrete(labels = c("CedV", "193")) +
+  scale_y_continuous(name = "Fusion\nindex (FI)", limits = c(-0.01, 4), breaks = seq(0, 4, 1), labels = scales::percent) +
+  scale_color_manual(values = c("#67a9cf", "#ef8a62", "#67a9cf", "#ef8a62"), labels = c("Fusion index / G - HA-tagged", "Fusion index / F - HA-tagged", "Fusion index / G - Untagged", "Fusion index / F - Untagged")) +
+  scale_fill_manual(values = c("#67a9cf", "#ef8a62", "white", "white"), labels = c("Fusion index / G - HA-tagged", "Fusion index / F - HA-tagged", "Fusion index / G - Untagged", "Fusion index / F - Untagged")) +
+  ggtheme + theme(axis.title.x = element_blank(), legend.title = element_blank())
+
+plot_3 = ggplot(Nt_CSE_fusion_aggr, aes(x = virus, y = value_relative, color = group, fill = group, shape = group, group =group)) +
+  geom_point(size = 1, alpha = 0.7, position=position_dodge(width = 0.25), color = "grey", fill = "grey") +
+  stat_summary(fun.data = mean_sdl, fun.args = list(mult = 1), position=position_dodge(width = 0.25), alpha = 0.7, size = 0.25) + 
+  scale_x_discrete(labels = c("NiV", "167")) +
+  scale_y_continuous(name = "Cell surface\nexpression (CSE)", limits = c(-0.01, 5), breaks = seq(0, 5, 1), labels = scales::percent,
+                     sec.axis = sec_axis(~ . * 1, name="Relative fusion", breaks = seq(0, 5, 1), labels = scales::percent)) +
+  scale_shape_manual(values = c(19, 19, 24, 24), labels = c("G CSE", "F CSE", "Fusion - Tagged", "Fusion - Untagged")) +
+  scale_color_manual(values = c("#67a9cf", "#ef8a62", "black", "black"), labels = c("G CSE", "F CSE", "Fusion - Tagged", "Fusion - Untagged")) +
+  scale_fill_manual(values = c("#67a9cf", "#ef8a62", "black", "white"), labels = c("G CSE", "F CSE", "Fusion - Tagged", "Fusion - Untagged"))  +
+  ggtheme + theme(axis.title.x = element_blank(), legend.title = element_blank()) +
+  theme(axis.text.x = element_blank(), axis.text.y.left = element_blank(), axis.title.y.left = element_blank(), legend.position = "none")
+
+plot_4 = ggplot(Nt_FI_aggr, aes(x = virus, y = value_relative, color = group, fill = group, group =group)) +
+  geom_point(size = 1, alpha = 0.7, position=position_dodge(width = 0.25), color = "grey", shape = 17) +
+  stat_summary(fun.data = mean_sdl, fun.args = list(mult = 1), position=position_dodge(width = 0.25), alpha = 0.7, shape = 24, size = 0.25) + 
+  scale_x_discrete(labels = c("NiV", "167")) +
+  scale_y_continuous(name = "Fusion\nindex (FI)", limits = c(-0.01, 4), breaks = seq(0, 4, 1), labels = scales::percent) +
+  scale_color_manual(values = c("#67a9cf", "#ef8a62", "#67a9cf", "#ef8a62"), labels = c("Fusion index / G - Tagged", "Fusion index / F - Tagged", "Fusion index / G - Untagged", "Fusion index / F - Untagged")) +
+  scale_fill_manual(values = c("#67a9cf", "#ef8a62","white", "white"), labels = c("Fusion index / G - Tagged", "Fusion index / F - Tagged", "Fusion index / G - Untagged", "Fusion index / F - Untagged")) +
+  ggtheme + theme(axis.title.x = element_blank(), legend.title = element_blank()) +
+  theme(axis.title.y = element_blank(), axis.text.y = element_blank(), legend.position = "none")
+
+# ASSEMBLE
+
+plot_left = (plot_1 + plot_2) + plot_layout(ncol = 1, heights = c(1, 1))
+plot_right = (plot_3 + plot_4) + plot_layout(ncol = 1, heights = c(1, 1))
+
+# complete assemblage
+patchwork = (plot_left | plot_right) + 
+  plot_layout(guides = "collect") & theme(legend.position = "right", legend.box.just = "left") &
+  theme(plot.tag = element_text(size = 8, face = "bold"))  
+
+# print figure
+# patchwork
+
+# save figure
+ggsave(paste0("export/CedV_fusion_", "Fig4_1", ".pdf"),
+       width = 15.5, height = 6, units = "cm", dpi = 600)
+
+# plot relative data
+plot_bottom = ggplot(Ct_FCSE_fusion_aggr, aes(x = virus, y = value_relative,  fill = group, group = group)) +
+  geom_point(size = 1, alpha = 0.7, position=position_dodge(width = 0.25), color = "grey", fill = "grey") +
+  stat_summary(fun.data = mean_sdl, fun.args = list(mult = 1), position=position_dodge(width = 0.25), alpha = 0.7, color = "#ef8a62", size = 0.25, shape = 21) + 
+  scale_x_discrete(labels = c("CedV 193")) +
+  scale_y_continuous(name = "F cell surface\nexpression",limits = c(-0.01, 1.25), breaks = seq(0, 1.25, 0.5), labels = scales::percent) +
+  scale_fill_manual(values = c("#ef8a62", "white"), labels = c("HA-tagged", "Untagged")) +
+  ggtheme + theme(axis.title.x = element_blank(), legend.title = element_blank())
+
+# print figure
+# plot_bottom
+
+ggsave(paste0("export/CedV_fusion_", "Fig4_2", ".pdf"),
+       width = 8, height = 3, units = "cm", dpi = 600)
+
+```
+
+## 3.3. Statistical analyses
+
+### 3.3.1. CedV
+
+Test 1: fusion; Test 2: fusion index / F; Test 3: fusion index / G
+
+Homo: under the homoscedasticity assumption; Hetero: under the heteroscedasticity assumption
+
+```{r}
+
+Ct$group = paste0(Ct$virus, "_", Ct$tag)
+Ct$group = factor(Ct$group, levels = c("CedV_HA", "CedV_193_none", "CedV_193_HA"))
+
+Ct_FI$group = paste0(Ct_FI$virus, "_", Ct_FI$tag)
+Ct_FI$group = factor(Ct_FI$group, levels = c("CedV_HA", "CedV_193_none", "CedV_193_HA"))
+
+# Tests
+
+test_1_homo = lme(value ~ group, random = ~ 1|replicate_bio,
+                    data = subset(Ct, variable == "fusion_mean"),
+                    method = "ML")
+
+test_1_hetero = lme(value ~ group, random = ~ 1|replicate_bio,
+                    data = subset(Ct, variable == "fusion_mean"),
+                    method = "ML",
+                    weights = varIdent(form = ~ 1|group))
+
+anova(test_1_homo, test_1_hetero)
+anova(test_1_hetero)
+
+test_2_homo = lme(value ~ group, random = ~ 1|replicate_bio,
+                    data = subset(Ct_FI, variable == "FI_F"),
+                    method = "ML")
+
+test_2_hetero = lme(value ~ group, random = ~ 1|replicate_bio,
+                    data = subset(Ct_FI, variable == "FI_F"),
+                    method = "ML",
+                    weights = varIdent(form = ~ 1|group))
+
+anova(test_2_homo, test_2_hetero)
+anova(test_2_hetero)
+
+test_3_homo = lme(value ~ group, random = ~ 1|replicate_bio,
+                    data = subset(Ct_FI, variable == "FI_G"),
+                    method = "ML")
+
+test_3_hetero = lme(value ~ group, random = ~ 1|replicate_bio,
+                    data = subset(Ct_FI, variable == "FI_G"),
+                    method = "ML",
+                    weights = varIdent(form = ~ 1|group))
+
+anova(test_3_homo, test_2_hetero)
+anova(test_3_hetero)
+
+tukey_1 = lsmeans(test_1_hetero, pairwise ~ group, adjust = "tukey")
+tukey_2 = lsmeans(test_2_hetero, pairwise ~ group, adjust = "tukey")
+tukey_3 = lsmeans(test_3_hetero, pairwise ~ group, adjust = "tukey")
+
+# Store and format results
+
+stats = as.data.frame(rbind(
+  anova(test_1_hetero)[2, ],
+  anova(test_2_hetero)[2, ],
+  anova(test_3_hetero)[2, ]))
+
+stats$variable = c("Fusion",
+                       "Fusion index / F", 
+                       "Fusion index / G")
+stats$comparison = NA
+
+stats$test = "Wald test (F-value)"
+
+stats$Value = NA
+stats$Std.Error = NA
+
+stats = stats[, c("variable", "comparison", "test", "F-value", "p-value", "Value", "Std.Error")]
+colnames(stats) = c("Variable", "Comparison", "Test", "Statistics", "p_value", "Estimate", "se")
+
+tukey = rbind(
+  as.data.frame(tukey_1[[2]]),
+  as.data.frame(tukey_2[[2]]), 
+  as.data.frame(tukey_3[[2]]))
+
+tukey$variable = c("Fusion",
+                       "Fusion index / F", 
+                       "Fusion index / G")
+
+tukey$test = "Tukey pairwise Comparison (t-ratio)"
+
+tukey = tukey[, c("variable", "contrast", "test", "t.ratio", "p.value", "estimate", "SE")]
+colnames(tukey) = c("Variable", "Comparison", "Test", "Statistics", "p_value", "Estimate", "se")
+
+stats = rbind(stats, tukey)
+
+stats = stats[order(stats$Variable), ]
+
+stats = stats %>% mutate_if(is.numeric, round, digits = 2)
+
+stats[stats$p_value < 0.001, "p_value"] = "< 0.001"
+
+stats$Estimate = paste0(stats$Estimate, " ± ", stats$se)
+
+stats = stats[, c("Variable", "Comparison", "Test", "Statistics", "p_value", "Estimate")]
+stats[stats$Estimate == ("NA ± NA"), "Estimate"] = NA
+
+kable(stats, digits = 2, row.names = F) %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"))
+
+```
+
+### 3.3.2. NiV
+
+Test 1: fusion; Test 2: fusion index / F; Test 3: fusion index / G
+
+Homo: under the homoscedasticity assumption; Hetero: under the heteroscedasticity assumption
+
+```{r}
+
+Nt$group = paste0(Nt$virus, "_", Nt$tag)
+Nt$group = factor(Nt$group, levels = c("NiV_HA", "NiV_none", "NiV_167_none"))
+
+Nt_FI$group = paste0(Nt_FI$virus, "_", Nt_FI$tag)
+Nt_FI$group = factor(Nt_FI$group, levels = c("NiV_HA", "NiV_none", "NiV_167_none"))
+
+# Tests
+
+test_1_homo = lme(value ~ group, random = ~ 1|replicate_bio,
+                    data = subset(Nt, variable == "fusion_mean"),
+                    method = "ML")
+
+test_1_hetero = lme(value ~ group, random = ~ 1|replicate_bio,
+                    data = subset(Nt, variable == "fusion_mean"),
+                    method = "ML",
+                    weights = varIdent(form = ~ 1|group))
+
+anova(test_1_homo, test_1_hetero)
+anova(test_1_hetero)
+
+test_2_homo = lme(value ~ group, random = ~ 1|replicate_bio,
+                    data = subset(Nt_FI, variable == "FI_F" & !is.na(value)),
+                    method = "ML")
+
+test_2_hetero = lme(value ~ group, random = ~ 1|replicate_bio,
+                    data = subset(Nt_FI, variable == "FI_F" & !is.na(value)),
+                    method = "ML",
+                    weights = varIdent(form = ~ 1|group))
+
+anova(test_2_homo, test_2_hetero)
+anova(test_2_hetero)
+
+test_3_homo = lme(value ~ group, random = ~ 1|replicate_bio,
+                    data = subset(Nt_FI, variable == "FI_G" & !is.na(value)),
+                    method = "ML")
+
+test_3_hetero = lme(value ~ group, random = ~ 1|replicate_bio,
+                    data = subset(Nt_FI, variable == "FI_G" & !is.na(value)),
+                    method = "ML",
+                    weights = varIdent(form = ~ 1|group))
+
+anova(test_3_homo, test_2_hetero)
+anova(test_3_hetero)
+
+# Store and format results
+
+stats = as.data.frame(rbind(
+  summary(test_1_hetero)$tTable[2, ],
+  summary(test_2_hetero)$tTable[2, ],
+  summary(test_3_hetero)$tTable[2, ]))
+
+stats$variable = c("Fusion",
+                       "Fusion index / F", 
+                       "Fusion index / G")
+
+stats$comparison = "NiV167 - NiV"
+
+stats$test = "Wald test (t-ratio)"
+
+stats = stats[, c("variable", "comparison", "test", "t-value", "p-value", "Value", "Std.Error")]
+colnames(stats) = c("Variable", "Comparison", "Test", "Statistics", "p-value", "Estimate", "se")
+
+stats = stats[order(stats$Variable), ]
+
+stats = stats %>% mutate_if(is.numeric, round, digits = 2)
+
+stats[stats$p_value < 0.001, "p-value"] = "< 0.001"
+
+stats$Estimate = paste0(stats$Estimate, " ± ", stats$se)
+
+stats = stats[, c("Variable", "Comparison", "Test", "Statistics", "p-value", "Estimate")]
+
+kable(stats, digits = 2, row.names = F) %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"))
+
+```
+
+### 3.3.3. CedV F CSE
+
+Homo: under the homoscedasticity assumption; Hetero: under the heteroscedasticity assumption
+
+```{r}
+
+# Tests
+
+test_1_homo = lme(value ~ tag, random = ~ 1|replicate_bio,
+                    data = Ct_FCSE,
+                    method = "ML")
+
+test_1_hetero = lme(value ~ tag, random = ~ 1|replicate_bio,
+                    data = Ct_FCSE,
+                    method = "ML",
+                    weights = varIdent(form = ~ 1|tag))
+
+anova(test_1_homo, test_1_hetero)
+anova(test_1_homo)
+
+# Store and format results
+
+stats = as.data.frame(rbind(
+  summary(test_1_hetero)$tTable[2, ]))
+
+stats$variable = c("F cell surface expression")
+
+stats$comparison = "CedV193(HA) - CedV193"
+
+stats$test = "Wald test (t-ratio)"
+
+stats = stats[, c("variable", "comparison", "test", "t-value", "p-value", "Value", "Std.Error")]
+colnames(stats) = c("Variable", "Comparison", "Test", "Statistics", "p-value", "Estimate", "se")
+
+stats = stats[order(stats$Variable), ]
+
+stats = stats %>% mutate_if(is.numeric, round, digits = 2)
+
+stats[stats$p_value < 0.001, "p-value"] = "< 0.001"
+
+stats$Estimate = paste0(stats$Estimate, " ± ", stats$se)
+
+stats = stats[, c("Variable", "Comparison", "Test", "Statistics", "p-value", "Estimate")]
+
+kable(stats, digits = 2, row.names = F) %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"))
+
+```
+
+```{r}
+
+# clean working space
+remove(Ct, Nt, Ct_CSE_fusion_aggr, Nt_CSE_fusion_aggr, Ct_FI, Nt_FI, Ct_FI_aggr, Nt_FI_aggr, Ct_FCSE)
+remove(plot_1, plot_2, plot_3, plot_4, plot_left, plot_right, patchwork)
+remove(test_1_hetero, test_1_homo, test_2_hetero, test_2_homo, test_3_hetero, test_3_homo, stats, tukey, tukey_1, tukey_2, tukey_3)
+
+```
+
+# 4. Avidity selected mutants (Figure 5)
+
+## 4.1. Data exploration
+
+### 4.1.1. Avidity
+
+```{r, warning = F, fig.width = 24 / 2.54, fig.height = 7 / 2.54}
+
+# subset data of interest
+Cav = subset(data, experiment == "avidity selected tagged CedV mutants",
+             select = -c(experiment))
+
+Cav = as.data.frame(pivot_wider(Cav, names_from = variable, values_from = value))
+
+Cav$avidity = Cav$CoIP_GHA / Cav$Lysate_GHA * Cav$IP_FFLAG
+
+#Cav$avidity = NA
+#Cav[Cav$virus == "CedV", "avidity"] = Cav[Cav$virus == "CedV", "CoIP_GHA"] / 
+ # Cav[Cav$virus == "CedV", "Lysate_GHA"] * Cav[Cav$virus == "CedV", "IP_FFLAG"]
+
+# plot raw data
+ggplot(Cav, aes(x = virus, y = avidity)) +
+  geom_point(size = 1, alpha = 0.7, position=position_dodge(width = 0.25), color = "grey") +
+  stat_summary(fun.data = mean_sdl, fun.args = list(mult = 1), position=position_dodge(width = 0.25), alpha = 0.7) +
+  scale_y_continuous(name = "Avidity") +
+  scale_x_discrete(labels = c("CedV", "193")) +
+  ggtheme + theme(axis.title.x = element_blank(), legend.title = element_blank()) +
+  ggtitle("Raw data") 
+
+# transform into relative data
+Cav$value_relative = NA
+for (i in 1:nrow(Cav)){
+  Cav$value_relative[i] = Cav$avidity[i] / 
+    Cav[Cav$replicate_bio == Cav$replicate_bio[i] & 
+              Cav$virus == "CedV", "avidity"]
+}
+remove(i)
+
+# plot relative data
+ggplot(Cav, aes(x = virus, y = value_relative)) +
+  geom_point(size = 1, alpha = 0.7, position=position_dodge(width = 0.25), color = "grey") +
+  stat_summary(fun.data = mean_sdl, fun.args = list(mult = 1), position=position_dodge(width = 0.25), alpha = 0.7) +
+  scale_y_continuous(name = "Avidity", labels = scales::percent) +
+  scale_x_discrete(labels = c("CedV", "193")) +
+  ggtheme + theme(axis.title.x = element_blank(), legend.title = element_blank())+
+  ggtitle("Relative data") 
+
+```
+
+### 4.1.2. Polymers
+
+```{r, warning = F, fig.width = 24 / 2.54, fig.height = 7 / 2.54}
+
+# subset data of interest
+Cpo = subset(data, experiment == "polymer selected CedV mutants",
+             select = -c(experiment))
+
+Cpo = as.data.frame(pivot_wider(Cpo, names_from = variable, values_from = value))
+
+Cpo$prop_Tetramer = Cpo$Tetramer / (Cpo$Tetramer + Cpo$Dimer + Cpo$Monomer1 + Cpo$Monomer2)
+Cpo$prop_Dimer = Cpo$Dimer / (Cpo$Tetramer + Cpo$Dimer + Cpo$Monomer1 + Cpo$Monomer2)
+Cpo$prop_Monomer = (Cpo$Monomer1 + Cpo$Monomer2) / (Cpo$Tetramer + Cpo$Dimer + Cpo$Monomer1 + Cpo$Monomer2)
+
+Cpo = as.data.frame(pivot_longer(Cpo, cols = starts_with("prop"), names_to = "variable", values_to = "value"))
+
+Cpo$variable = factor(Cpo$variable, levels = c("prop_Tetramer","prop_Dimer","prop_Monomer"))
+
+#Cav$avidity = NA
+#Cav[Cav$virus == "CedV", "avidity"] = Cav[Cav$virus == "CedV", "CoIP_GHA"] / 
+ # Cav[Cav$virus == "CedV", "Lysate_GHA"] * Cav[Cav$virus == "CedV", "IP_FFLAG"]
+
+# plot raw data
+ggplot(Cpo, aes(x = variable, y = value, fill = virus, group = virus)) +
+  geom_point(size = 1, alpha = 0.7, position=position_dodge(width = 0.25), color = "grey") +
+  stat_summary(fun.data = mean_sdl, fun.args = list(mult = 1), position=position_dodge(width = 0.25), alpha = 0.7, shape = 21) +
+  scale_y_continuous(name = "Proportion / total oligomers", labels = scales::percent, limits = c(0,1)) +
+  scale_x_discrete(labels = c("Tetramers", "Dimers", "Monomers")) +
+  scale_fill_manual(values = c("grey", "black"), labels = c("CedV", "193")) +
+  ggtheme + theme(axis.title.x = element_blank(), legend.title = element_blank()) +
+  ggtitle("Raw data") 
+
+```
+
+## 4.2. Publication figure
+
+```{r, fig.show = 'hide'}
+
+plot_1 = ggplot(Cpo, aes(x = variable, y = value, fill = virus, group = virus)) +
+  geom_point(size = 1, alpha = 0.7, position=position_dodge(width = 0.25), color = "grey") +
+  stat_summary(fun.data = mean_sdl, fun.args = list(mult = 1), position=position_dodge(width = 0.25), alpha = 0.7, shape = 21) +
+  scale_y_continuous(name = "Proportion / total oligomers", labels = scales::percent, limits = c(0,1)) +
+  scale_x_discrete(labels = c("Tetramers", "Dimers", "Monomers")) +
+  scale_fill_manual(values = c("grey", "black"), labels = c("CedV", "193")) +
+  ggtheme + theme(axis.title.x = element_blank(), legend.title = element_blank()) +
+  theme(legend.position = c(0.99, 1.03), legend.justification = c(1, 1))
+
+# print 
+# plot_1
+
+ggsave(paste0("export/CedV_fusion_", "Fig5_1", ".pdf"),
+       width = 7, height = 5, units = "cm", dpi = 600)
+
+# Figure 2.e
+plot_2 = ggplot(Cav, aes(x = virus, y = value_relative)) +
+  geom_point(size = 1, alpha = 0.7, position=position_dodge(width = 0.25), color = "grey") +
+  stat_summary(fun.data = mean_sdl, fun.args = list(mult = 1), position=position_dodge(width = 0.25), alpha = 0.7) +
+  scale_y_continuous(name = "Avidity", labels = scales::percent, limits = c(0, 1)) +
+  scale_x_discrete(labels = c("CedV", "193")) +
+  ggtheme + theme(axis.title.x = element_blank(), legend.title = element_blank())
+
+# print 
+# plot_2
+
+ggsave(paste0("export/CedV_fusion_", "Fig5_2", ".pdf"),
+       width = 5, height = 5, units = "cm", dpi = 600)
+
+```
+
+## 4.3. Statistical analyses
+
+Homo: under the homoscedasticity assumption; Hetero: under the heteroscedasticity assumption
+
+```{r}
+
+# Tests
+
+test_1_homo = lme(avidity ~ virus, random = ~ 1|replicate_bio,
+                    data = Cav,
+                    method = "ML")
+
+test_1_hetero = lme(avidity ~ virus, random = ~ 1|replicate_bio,
+                    data = Cav,
+                    method = "ML",
+                    weights = varIdent(form = ~ 1|virus))
+
+anova(test_1_homo, test_1_hetero)
+anova(test_1_homo)
+
+# Store and format results
+
+stats = as.data.frame(rbind(
+  summary(test_1_hetero)$tTable[2, ]))
+
+stats$variable = c("F-G avidity")
+
+stats$comparison = "CedV193 - CedV"
+
+stats$test = "Wald test (t-ratio)"
+
+stats = stats[, c("variable", "comparison", "test", "t-value", "p-value", "Value", "Std.Error")]
+colnames(stats) = c("Variable", "Comparison", "Test", "Statistics", "p-value", "Estimate", "se")
+
+stats = stats[order(stats$Variable), ]
+
+stats = stats %>% mutate_if(is.numeric, round, digits = 2)
+
+stats[stats$p_value < 0.001, "p-value"] = "< 0.001"
+
+stats$Estimate = paste0(stats$Estimate, " ± ", stats$se)
+
+stats = stats[, c("Variable", "Comparison", "Test", "Statistics", "p-value", "Estimate")]
+
+kable(stats, digits = 2, row.names = F) %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"))
+
+```
+
+```{r}
+
+# clean working space
+remove(Cav, Cpo)
+remove(plot_1, plot_2)
+remove(test_1_hetero, test_1_homo, stats)
+
+```
+
+# 5. Tagged NiV and HeV mutants (Figure S1)
+
+## 5.1. Data exploration
+
+```{r, warning = F, fig.width = 24 / 2.54, fig.height = 7 / 2.54}
+
+# subset data of interest
+NnH = subset(data, experiment == "fusion tagged NiV and HeV mutants",
+             select = -c(experiment))
+
+# calculate mean across technical replicates for figures
+NnH_CSE_fusion_aggr = aggregate(value ~ variable + conditions + virus + replicate_bio + tag, data = NnH, mean)
+
+
+NnH_fusion_aggr = subset(NnH_CSE_fusion_aggr, variable == "fusion_mean")
+
+# plot raw data
+ggplot(NnH_fusion_aggr, aes(x = virus, y = value)) +
+  geom_point(size = 1, alpha = 0.7, position=position_dodge(width = 0.25), color = "grey", fill = "grey", shape = 17) +
+  stat_summary(fun.data = mean_sdl, fun.args = list(mult = 1), position=position_dodge(width = 0.25), alpha = 0.7, shape = 17) + 
+  scale_x_discrete(labels = c("NiV", "NiV 167", "HeV", "HeV 167")) +
+  scale_y_continuous(name = "Fusion") +
+  ggtheme + theme(axis.title.x = element_blank(), legend.title = element_blank()) +
+  ggtitle("Raw data") 
+
+# transform into relative data
+NnH_fusion_aggr$value_relative = NA
+for (i in 1:nrow(NnH_fusion_aggr)){
+  NnH_fusion_aggr$value_relative[i] = NnH_fusion_aggr$value[i] / 
+    NnH_fusion_aggr[NnH_fusion_aggr$replicate_bio == NnH_fusion_aggr$replicate_bio[i] & 
+              NnH_fusion_aggr$variable == NnH_fusion_aggr$variable[i] &
+              NnH_fusion_aggr$virus == "NiV", "value"]
+}
+remove(i)
+
+# plot relative data
+ggplot(NnH_fusion_aggr, aes(x = virus, y = value_relative)) +
+  geom_point(size = 1, alpha = 0.7, position=position_dodge(width = 0.25), color = "grey", fill = "grey", shape = 17) +
+  stat_summary(fun.data = mean_sdl, fun.args = list(mult = 1), position=position_dodge(width = 0.25), alpha = 0.7, shape = 17) + 
+  scale_x_discrete(labels = c("NiV", "NiV 167", "HeV", "HeV 167")) +
+  scale_y_continuous(name = "Fusion", limits = c(-0.01, 1.25), breaks = seq(0, 1.25, 0.5), labels = scales::percent) +
+  ggtheme + theme(axis.title.x = element_blank(), legend.title = element_blank()) +
+  ggtitle("Relative data") 
+
+NnH_CSE_aggr = subset(NnH_CSE_fusion_aggr, variable == "CSE_G")
+
+# plot raw data
+ggplot(NnH_CSE_aggr, aes(x = virus, y = value)) +
+  geom_point(size = 1, alpha = 0.7, position=position_dodge(width = 0.25), color = "grey", fill = "grey") +
+  stat_summary(fun.data = mean_sdl, fun.args = list(mult = 1), position=position_dodge(width = 0.25), alpha = 0.7, color = "#67a9cf", size = 0.25) + 
+  scale_x_discrete(labels = c("NiV 167", "HeV 167")) +
+  scale_y_continuous(name = "Cell surface\nexpression (CSE)") +
+  ggtheme + theme(axis.title.x = element_blank(), legend.title = element_blank()) +
+  ggtitle("Raw data") 
+
+# transform into relative data
+NnH_CSE_aggr$value_relative = NA
+for (i in 1:nrow(NnH_CSE_aggr)){
+  NnH_CSE_aggr$value_relative[i] = NnH_CSE_aggr$value[i] / 
+    NnH_CSE_aggr[NnH_CSE_aggr$replicate_bio == NnH_CSE_aggr$replicate_bio[i] & 
+              NnH_CSE_aggr$variable == NnH_CSE_aggr$variable[i] &
+              NnH_CSE_aggr$virus == "NiV_167", "value"]
+}
+remove(i)
+
+# plot relative data
+ggplot(NnH_CSE_aggr, aes(x = virus, y = value_relative)) +
+  geom_point(size = 1, alpha = 0.7, position=position_dodge(width = 0.25), color = "grey", fill = "grey") +
+  stat_summary(fun.data = mean_sdl, fun.args = list(mult = 1), position=position_dodge(width = 0.25), alpha = 0.7, size = 0.25, color = "#67a9cf") + 
+  scale_x_discrete(labels = c("NiV 167", "HeV 167")) +
+  scale_y_continuous(name = "Cell surface\nexpression (CSE)", limits = c(-0.01, 1.25), breaks = seq(0, 1.25, 0.5), labels = scales::percent) +
+  ggtheme + theme(axis.title.x = element_blank(), legend.title = element_blank()) +
+  ggtitle("Relative data") 
+
+
+```
+
+## 5.2. Publication figure
+
+```{r, warning = F, fig.width = 14 / 2.54, fig.height = 10 / 2.54}
+
+plot_1 = ggplot(NnH_fusion_aggr, aes(x = virus, y = value_relative)) +
+  geom_point(size = 1, alpha = 0.7, position=position_dodge(width = 0.25), color = "grey", fill = "grey", shape = 17) +
+  stat_summary(fun.data = mean_sdl, fun.args = list(mult = 1), position=position_dodge(width = 0.25), alpha = 0.7, size = 0.25, shape = 17) + 
+  scale_x_discrete(labels = c("NiV", "NiV 167", "HeV", "HeV 167")) +
+  scale_y_continuous(name = "Fusion", limits = c(-0.01, 1.25), breaks = seq(0, 1.25, 0.5), labels = scales::percent) +
+  ggtheme + theme(axis.title.x = element_blank(), legend.title = element_blank())
+
+plot_2 = ggplot(NnH_CSE_aggr, aes(x = virus, y = value_relative)) +
+  geom_point(size = 1, alpha = 0.7, position=position_dodge(width = 0.25), color = "grey", fill = "grey") +
+  stat_summary(fun.data = mean_sdl, fun.args = list(mult = 1), position=position_dodge(width = 0.25), alpha = 0.7, size = 0.25, color = "#67a9cf") + 
+  scale_x_discrete(labels = c("NiV 167", "HeV 167")) +
+  scale_y_continuous(name = "Cell surface\nexpression (CSE)", limits = c(-0.01, 1.25), breaks = seq(0, 1.25, 0.5), labels = scales::percent) +
+  ggtheme + theme(axis.title.x = element_blank(), legend.title = element_blank())
+
+patchwork = (plot_1 | plot_2) + 
+  plot_layout(guides = "collect") & theme(legend.position = "right", legend.box.just = "left") 
+
+# print
+# patchwork
+
+ggsave(paste0("export/CedV_fusion_", "FigS1", ".pdf"),
+       width = 14, height = 5, units = "cm", dpi = 600)
+
+```
+

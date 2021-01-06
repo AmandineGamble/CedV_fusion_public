@@ -348,7 +348,9 @@ stats$Estimate = paste0(stats$Estimate, " ± ", stats$se)
 
 stats = stats[, c("Variable", "Comparison", "Test", "Statistics", "p-value", "Estimate")]
 
-kable(stats, digits = 2, row.names = F) %>%
+kable(stats, digits = 2, row.names = F, caption = 
+        "Comparison of fusion performances between NiV and CedV with a 1:1 CSE ratio. The effect of virus genotype on the variable of interest was quantified with a Wald test (reporting a t-value) obtained from a mixed model allowing for heterogeneous variance among groups (here viruses) and including a random effect representing the experimental session. Fusion as number of nuclei included in syncytia, and fusion indices as number of nuclei included in syncytia / flow-cytometry signal."
+      ) %>%
   kable_styling(bootstrap_options = c("striped", "hover", "condensed"))
 
 ```
@@ -427,7 +429,9 @@ stats$Estimate = paste0(stats$Estimate, " ± ", stats$se)
 
 stats = stats[, c("Variable", "Comparison", "Test", "Statistics", "p-value", "Estimate")]
 
-kable(stats, digits = 2, row.names = F) %>%
+kable(stats, digits = 2, row.names = F, caption = 
+        "Comparison of fusion performances between NiV and CedV with a 2:1 CSE ratio. The effect of virus genotype on the variable of interest was quantified with a Wald test (reporting a t-value) obtained from a mixed model allowing for heterogeneous variance among groups (here viruses) and including a random effect representing the experimental session. Fusion as number of nuclei included in syncytia, and fusion indices as number of nuclei included in syncytia / flow-cytometry signal."
+      ) %>%
   kable_styling(bootstrap_options = c("striped", "hover", "condensed"))
 
 ```
@@ -746,8 +750,9 @@ plot_1 = ggplot(Cm_fusion, aes(x = virus, y = value_relative, fill = conditions,
   scale_y_continuous(name = "Fusion", limits = c(-0.01,5), breaks = seq(0, 5, 1), labels = scales::percent) +
   scale_fill_manual(values = c("black", "white")) +
   ggtheme + theme(axis.title.x = element_blank(), legend.title = element_blank()) +
-  theme(legend.position = c(0.005, 1.05), legend.justification = c(0, 1)) +
-  theme(axis.text.x = element_blank())
+  theme(legend.position = c(0.99, 1.02), legend.justification = c(1, 1)) +
+  theme(axis.text.x = element_blank()) +
+  theme(legend.key.size = unit(0, 'lines'))
 
 plot_2 = ggplot(Nm_fusion, aes(x = virus, y = value_relative)) +
   geom_point(size = 1, alpha = 0.7, position=position_dodge(width = .25), color = "grey", shape = 17) +
@@ -866,7 +871,10 @@ stats$Estimate = paste0(stats$Estimate, " ± ", stats$se)
 stats = stats[, c("Variable", "Comparison", "Test", "Statistics", "p_value", "Estimate")]
 stats[stats$Estimate == ("NA ± NA"), "Estimate"] = NA
 
-kable(stats, digits = 2, row.names = F) %>%
+kable(stats, digits = 2, row.names = F,
+      caption = 
+        "Comparison of fusion performances among CedV mutants in HEK 293T cells. The effect of virus genotype on the variable of interest was quantified with a Wald test (reporting an F-value) obtained from a mixed model allowing for heterogeneous variance among groups (here G genotype) and including a random effect representing the experimental session. As this experiment included more than two groups, post-hoc pairwise comparisons between genotypes were then performed using a Tukey test (reporting a t-ratio). Fusion was quantified as number of nuclei included in syncytia.."
+      ) %>%
   kable_styling(bootstrap_options = c("striped", "hover", "condensed"))
 
 ```
@@ -931,7 +939,9 @@ stats$Estimate = paste0(stats$Estimate, " ± ", stats$se)
 stats = stats[, c("Variable", "Comparison", "Test", "Statistics", "p_value", "Estimate")]
 stats[stats$Estimate == ("NA ± NA"), "Estimate"] = NA
 
-kable(stats, digits = 2, row.names = F) %>%
+kable(stats, digits = 2, row.names = F, caption = 
+        "Comparison of fusion performances among CedV mutants in CHO pgsA-745 cells. The effect of virus genotype on the variable of interest was quantified with a Wald test (reporting an F-value) obtained from a mixed model allowing for heterogeneous variance among groups (here G genotype) and including a random effect representing the experimental session. As this experiment included more than two groups, post-hoc pairwise comparisons between genotypes were then performed using a Tukey test (reporting a t-ratio). Fusion was quantified as number of nuclei included in syncytia."
+      ) %>%
   kable_styling(bootstrap_options = c("striped", "hover", "condensed"))
 
 ```
@@ -996,7 +1006,9 @@ stats$Estimate = paste0(stats$Estimate, " ± ", stats$se)
 stats = stats[, c("Variable", "Comparison", "Test", "Statistics", "p_value", "Estimate")]
 stats[stats$Estimate == ("NA ± NA"), "Estimate"] = NA
 
-kable(stats, digits = 2, row.names = F) %>%
+kable(stats, digits = 2, row.names = F, caption = 
+        "Comparison of binding affinity for ephrin-B2 among CedV mutants. The effect of virus genotype on the variable of interest was quantified with a Wald test (reporting an F-value) obtained from a mixed model allowing for heterogeneous variance among groups (here G genotype) and including a random effect representing the experimental session. As this experiment included more than two groups, post-hoc pairwise comparisons between genotypes were then performed using a Tukey test (reporting a t-ratio). Affinity was quantified as flow-cytometry signal."
+      ) %>%
   kable_styling(bootstrap_options = c("striped", "hover", "condensed"))
 
 ```
@@ -1061,7 +1073,9 @@ stats$Estimate = paste0(stats$Estimate, " ± ", stats$se)
 stats = stats[, c("Variable", "Comparison", "Test", "Statistics", "p_value", "Estimate")]
 stats[stats$Estimate == ("NA ± NA"), "Estimate"] = NA
 
-kable(stats, digits = 2, row.names = F) %>%
+kable(stats, digits = 2, row.names = F, caption = 
+        "Comparison of fusion performances among NiV mutants. The effect of virus genotype on the variable of interest was quantified with a Wald test (reporting an F-value) obtained from a mixed model allowing for heterogeneous variance among groups (here G genotype) and including a random effect representing the experimental session. As this experiment included more than two groups, post-hoc pairwise comparisons between genotypes were then performed using a Tukey test (reporting a t-ratio). Fusion was quantified as number of nuclei included in syncytia."
+      ) %>%
   kable_styling(bootstrap_options = c("striped", "hover", "condensed"))
 
 ```
@@ -1126,7 +1140,9 @@ stats$Estimate = paste0(stats$Estimate, " ± ", stats$se)
 stats = stats[, c("Variable", "Comparison", "Test", "Statistics", "p_value", "Estimate")]
 stats[stats$Estimate == ("NA ± NA"), "Estimate"] = NA
 
-kable(stats, digits = 2, row.names = F) %>%
+kable(stats, digits = 2, row.names = F, caption = 
+        "Comparison of binding affinity for ephrin-B2 among NiV mutants. The effect of virus genotype on the variable of interest was quantified with a Wald test (reporting an F-value) obtained from a mixed model allowing for heterogeneous variance among groups (here G genotype) and including a random effect representing the experimental session. As this experiment included more than two groups, post-hoc pairwise comparisons between genotypes were then performed using a Tukey test (reporting a t-ratio). Affinity was quantified as flow-cytometry signal."
+      ) %>%
   kable_styling(bootstrap_options = c("striped", "hover", "condensed"))
 
 ```
@@ -1191,7 +1207,9 @@ stats$Estimate = paste0(stats$Estimate, " ± ", stats$se)
 stats = stats[, c("Variable", "Comparison", "Test", "Statistics", "p_value", "Estimate")]
 stats[stats$Estimate == ("NA ± NA"), "Estimate"] = NA
 
-kable(stats, digits = 2, row.names = F) %>%
+kable(stats, digits = 2, row.names = F, caption = 
+        "Comparison of fusion performances among HeV mutants. The effect of virus genotype on the variable of interest was quantified with a Wald test (reporting an F-value) obtained from a mixed model allowing for heterogeneous variance among groups (here G genotype) and including a random effect representing the experimental session. As this experiment included more than two groups, post-hoc pairwise comparisons between genotypes were then performed using a Tukey test (reporting a t-ratio). Fusion was quantified as number of nuclei included in syncytia."
+      ) %>%
   kable_styling(bootstrap_options = c("striped", "hover", "condensed"))
 
 ```
@@ -1256,7 +1274,9 @@ stats$Estimate = paste0(stats$Estimate, " ± ", stats$se)
 stats = stats[, c("Variable", "Comparison", "Test", "Statistics", "p_value", "Estimate")]
 stats[stats$Estimate == ("NA ± NA"), "Estimate"] = NA
 
-kable(stats, digits = 2, row.names = F) %>%
+kable(stats, digits = 2, row.names = F, caption =
+        "Comparison of binding affinity for ephrin-B2 among HeV mutants. The effect of virus genotype on the variable of interest was quantified with a Wald test (reporting an F-value) obtained from a mixed model allowing for heterogeneous variance among groups (here G genotype) and including a random effect representing the experimental session. As this experiment included more than two groups, post-hoc pairwise comparisons between genotypes were then performed using a Tukey test (reporting a t-ratio). Affinity was quantified as flow-cytometry signal."
+      ) %>%
   kable_styling(bootstrap_options = c("striped", "hover", "condensed"))
 
 ```
@@ -1552,8 +1572,8 @@ plot_1 = ggplot(Ct_CSE_fusion_aggr, aes(x = virus, y = value_relative, color = g
   geom_point(size = 1, alpha = 0.7, position=position_dodge(width = 0.25), color = "grey", fill = "grey") +
   stat_summary(fun.data = mean_sdl, fun.args = list(mult = 1), position=position_dodge(width = 0.25), alpha = 0.7, size = 0.25) + 
   scale_x_discrete(labels = c("CedV", "193")) +
-  scale_y_continuous(name = "Cell surface\nexpression (CSE)", limits = c(-0.01, 5), breaks = seq(0, 5, 1), labels = scales::percent, 
-                     sec.axis = sec_axis(~ . * 1, name="Fusion", breaks = seq(0, 5, 1), labels = scales::percent)) +
+  scale_y_continuous(name = "Cell surface\nexpression (CSE)", limits = c(-0.01, 6), breaks = seq(0, 6, 1), labels = scales::percent, 
+                     sec.axis = sec_axis(~ . * 1, name="Fusion", breaks = seq(0, 6, 1), labels = scales::percent)) +
   scale_shape_manual(values = c(19, 19, 24, 24), labels = c("G CSE", "F CSE", "Fusion - HA-tagged", "Fusion - Untagged")) +
   scale_color_manual(values = c("#67a9cf", "#ef8a62", "black", "black"), labels = c("G CSE", "F CSE", "Fusion - HA-tagged", "Fusion - Untagged")) +
   scale_fill_manual(values = c("#67a9cf", "#ef8a62", "black", "white"), labels = c("G CSE", "F CSE", "Fusion - HA-tagged", "Fusion - Untagged")) +
@@ -1564,7 +1584,7 @@ plot_2 = ggplot(Ct_FI_aggr, aes(x = virus, y = value_relative, color = group, fi
   geom_point(size = 1, alpha = 0.7, position=position_dodge(width = 0.25), color = "grey", shape = 17) +
   stat_summary(fun.data = mean_sdl, fun.args = list(mult = 1), position=position_dodge(width = 0.25), alpha = 0.7, shape = 24, size = 0.25) + 
   scale_x_discrete(labels = c("CedV", "193")) +
-  scale_y_continuous(name = "Fusion\nindex (FI)", limits = c(-0.01, 4), breaks = seq(0, 4, 1), labels = scales::percent) +
+  scale_y_continuous(name = "Fusion\nindex (FI)", limits = c(-0.01, 6), breaks = seq(0, 6, 1), labels = scales::percent) +
   scale_color_manual(values = c("#67a9cf", "#ef8a62", "#67a9cf", "#ef8a62"), labels = c("Fusion index / G - HA-tagged", "Fusion index / F - HA-tagged", "Fusion index / G - Untagged", "Fusion index / F - Untagged")) +
   scale_fill_manual(values = c("#67a9cf", "#ef8a62", "white", "white"), labels = c("Fusion index / G - HA-tagged", "Fusion index / F - HA-tagged", "Fusion index / G - Untagged", "Fusion index / F - Untagged")) +
   ggtheme + theme(axis.title.x = element_blank(), legend.title = element_blank())
@@ -1573,8 +1593,8 @@ plot_3 = ggplot(Nt_CSE_fusion_aggr, aes(x = virus, y = value_relative, color = g
   geom_point(size = 1, alpha = 0.7, position=position_dodge(width = 0.25), color = "grey", fill = "grey") +
   stat_summary(fun.data = mean_sdl, fun.args = list(mult = 1), position=position_dodge(width = 0.25), alpha = 0.7, size = 0.25) + 
   scale_x_discrete(labels = c("NiV", "167")) +
-  scale_y_continuous(name = "Cell surface\nexpression (CSE)", limits = c(-0.01, 5), breaks = seq(0, 5, 1), labels = scales::percent,
-                     sec.axis = sec_axis(~ . * 1, name="Relative fusion", breaks = seq(0, 5, 1), labels = scales::percent)) +
+  scale_y_continuous(name = "Cell surface\nexpression (CSE)", limits = c(-0.01, 6), breaks = seq(0, 6, 1), labels = scales::percent,
+                     sec.axis = sec_axis(~ . * 1, name="Relative fusion", breaks = seq(0, 6, 1), labels = scales::percent)) +
   scale_shape_manual(values = c(19, 19, 24, 24), labels = c("G CSE", "F CSE", "Fusion - Tagged", "Fusion - Untagged")) +
   scale_color_manual(values = c("#67a9cf", "#ef8a62", "black", "black"), labels = c("G CSE", "F CSE", "Fusion - Tagged", "Fusion - Untagged")) +
   scale_fill_manual(values = c("#67a9cf", "#ef8a62", "black", "white"), labels = c("G CSE", "F CSE", "Fusion - Tagged", "Fusion - Untagged"))  +
@@ -1585,7 +1605,7 @@ plot_4 = ggplot(Nt_FI_aggr, aes(x = virus, y = value_relative, color = group, fi
   geom_point(size = 1, alpha = 0.7, position=position_dodge(width = 0.25), color = "grey", shape = 17) +
   stat_summary(fun.data = mean_sdl, fun.args = list(mult = 1), position=position_dodge(width = 0.25), alpha = 0.7, shape = 24, size = 0.25) + 
   scale_x_discrete(labels = c("NiV", "167")) +
-  scale_y_continuous(name = "Fusion\nindex (FI)", limits = c(-0.01, 4), breaks = seq(0, 4, 1), labels = scales::percent) +
+  scale_y_continuous(name = "Fusion\nindex (FI)", limits = c(-0.01, 6), breaks = seq(0, 6, 1), labels = scales::percent) +
   scale_color_manual(values = c("#67a9cf", "#ef8a62", "#67a9cf", "#ef8a62"), labels = c("Fusion index / G - Tagged", "Fusion index / F - Tagged", "Fusion index / G - Untagged", "Fusion index / F - Untagged")) +
   scale_fill_manual(values = c("#67a9cf", "#ef8a62","white", "white"), labels = c("Fusion index / G - Tagged", "Fusion index / F - Tagged", "Fusion index / G - Untagged", "Fusion index / F - Untagged")) +
   ggtheme + theme(axis.title.x = element_blank(), legend.title = element_blank()) +
@@ -1606,7 +1626,19 @@ patchwork = (plot_left | plot_right) +
 
 # save figure
 ggsave(paste0("export/CedV_fusion_", "Fig4_1", ".pdf"),
-       width = 15.5, height = 6, units = "cm", dpi = 600)
+       width = 15.5, height = 8, units = "cm", dpi = 600)
+
+# complete assemblage
+patchwork = (plot_left | plot_right) + 
+  plot_layout(guides = "collect") & theme(legend.position = "right", legend.box.just = "left") &
+  theme(plot.tag = element_text(size = 8, face = "bold"), legend.position = "none")  
+
+# print figure
+# patchwork
+
+# save figure
+ggsave(paste0("export/CedV_fusion_", "Fig4_1_no_leg", ".pdf"),
+       width = 10, height = 8, units = "cm", dpi = 600)
 
 # plot relative data
 plot_bottom = ggplot(Ct_FCSE_fusion_aggr, aes(x = virus, y = value_relative,  fill = group, group = group)) +
@@ -1708,9 +1740,11 @@ tukey = rbind(
   as.data.frame(tukey_2[[2]]), 
   as.data.frame(tukey_3[[2]]))
 
-tukey$variable = c("Fusion",
-                       "Fusion index / F", 
-                       "Fusion index / G")
+n_comp = 3
+
+tukey$variable = c(rep("Fusion", n_comp),
+                       rep("Fusion index / F", n_comp), 
+                       rep("Fusion index / G", n_comp))
 
 tukey$test = "Tukey pairwise Comparison (t-ratio)"
 
@@ -1730,7 +1764,9 @@ stats$Estimate = paste0(stats$Estimate, " ± ", stats$se)
 stats = stats[, c("Variable", "Comparison", "Test", "Statistics", "p_value", "Estimate")]
 stats[stats$Estimate == ("NA ± NA"), "Estimate"] = NA
 
-kable(stats, digits = 2, row.names = F) %>%
+kable(stats, digits = 2, row.names = F, caption =
+        "Analysis of the effect of HA-tag on fusion in CedV mutants. The effect of virus genotype on the variable of interest was quantified with a Wald test (reporting an F-value) obtained from a mixed model allowing for heterogeneous variance among groups (here tagged vs untagged) and including a random effect representing the experimental session. As this experiment included more than two groups, post-hoc pairwise comparisons between genotypes were then performed using a Tukey test (reporting a t-ratio). Fusion was quantified as number of nuclei included in syncytia, and fusion indices as number of nuclei included in syncytia / flow-cytometry signal."
+      ) %>%
   kable_styling(bootstrap_options = c("striped", "hover", "condensed"))
 
 ```
@@ -1815,7 +1851,9 @@ stats$Estimate = paste0(stats$Estimate, " ± ", stats$se)
 
 stats = stats[, c("Variable", "Comparison", "Test", "Statistics", "p-value", "Estimate")]
 
-kable(stats, digits = 2, row.names = F) %>%
+kable(stats, digits = 2, row.names = F, caption =
+        "Comparison of fusion indices among NiV mutants. The effect of virus genotype on the variable of interest was quantified with a Wald test (reporting a t-value) obtained from a mixed model allowing for heterogeneous variance among groups (here NiV mutants) and including a random effect representing the experimental session. Fusion was quantified as number of nuclei included in syncytia, and fusion indices as number of nuclei included in syncytia / flow-cytometry signal."
+      ) %>%
   kable_styling(bootstrap_options = c("striped", "hover", "condensed"))
 
 ```
@@ -1864,7 +1902,9 @@ stats$Estimate = paste0(stats$Estimate, " ± ", stats$se)
 
 stats = stats[, c("Variable", "Comparison", "Test", "Statistics", "p-value", "Estimate")]
 
-kable(stats, digits = 2, row.names = F) %>%
+kable(stats, digits = 2, row.names = F, caption = 
+        "Analysis of the effect of HA-tag of CedV G193 on F cell surface expression (CSE). The effect of virus genotype on the variable of interest was quantified with a Wald test (reporting a t-value) obtained from a mixed model allowing for heterogeneous variance among groups (here tagged vs untagged) and including a random effect representing the experimental session. Cell surface expression was quantified as flow-cytometry signal. "
+      ) %>%
   kable_styling(bootstrap_options = c("striped", "hover", "condensed"))
 
 ```
@@ -1872,8 +1912,8 @@ kable(stats, digits = 2, row.names = F) %>%
 ```{r}
 
 # clean working space
-remove(Ct, Nt, Ct_CSE_fusion_aggr, Nt_CSE_fusion_aggr, Ct_FI, Nt_FI, Ct_FI_aggr, Nt_FI_aggr, Ct_FCSE)
-remove(plot_1, plot_2, plot_3, plot_4, plot_left, plot_right, patchwork)
+remove(Ct, Nt, Ct_FCSE_fusion_aggr, Nt_FCSE_fusion_aggr, Ct_FI, Nt_FI, Ct_FI_aggr, Nt_FI_aggr, Ct_FCSE, Ct_FCSE_aggr)
+remove(plot_1, plot_2, plot_3, plot_4, plot_left, plot_right, plot_bottom, patchwork)
 remove(test_1_hetero, test_1_homo, test_2_hetero, test_2_homo, test_3_hetero, test_3_homo, stats, tukey, tukey_1, tukey_2, tukey_3)
 
 ```
@@ -2040,7 +2080,9 @@ stats$Estimate = paste0(stats$Estimate, " ± ", stats$se)
 
 stats = stats[, c("Variable", "Comparison", "Test", "Statistics", "p-value", "Estimate")]
 
-kable(stats, digits = 2, row.names = F) %>%
+kable(stats, digits = 2, row.names = F, caption = 
+        "Comparison of F G avidity between CedV G and CedV G193. The effect of virus genotype on the variable of interest was quantified with a Wald test (reporting a t-value) obtained from a mixed model allowing for heterogeneous variance among groups (here G genotype) and including a random effect representing the experimental session. Avidity was quantified as densitometry signal. "
+      ) %>%
   kable_styling(bootstrap_options = c("striped", "hover", "condensed"))
 
 ```
@@ -2098,7 +2140,7 @@ ggplot(NnH_fusion_aggr, aes(x = virus, y = value_relative)) +
   ggtheme + theme(axis.title.x = element_blank(), legend.title = element_blank()) +
   ggtitle("Relative data") 
 
-NnH_CSE_aggr = subset(NnH_CSE_fusion_aggr, variable == "CSE_G")
+NnH_CSE_aggr = subset(NnH_CSE_fusion_aggr, variable == "CSE_F")
 
 # plot raw data
 ggplot(NnH_CSE_aggr, aes(x = virus, y = value)) +
@@ -2160,3 +2202,168 @@ ggsave(paste0("export/CedV_fusion_", "FigS1", ".pdf"),
 
 ```
 
+## 5.3. Statistical analyses
+
+### 5.3.1. NiV fusion
+
+Homo: under the homoscedasticity assumption; Hetero: under the heteroscedasticity assumption
+
+```{r}
+
+# Tests
+
+test_1_homo = lme(value ~ virus, random = ~ 1|replicate_bio,
+                    data = subset(NnH, is.element(virus, c("NiV", "NiV_167")) & variable == "fusion_mean"),
+                    method = "ML")
+
+test_1_hetero = lme(value ~ virus, random = ~ 1|replicate_bio,
+                    data = subset(NnH, is.element(virus, c("NiV", "NiV_167")) & variable == "fusion_mean"),
+                    method = "ML",
+                    weights = varIdent(form = ~ 1|virus))
+
+anova(test_1_homo, test_1_hetero)
+anova(test_1_hetero)
+
+# Store and format results
+
+stats = as.data.frame(rbind(
+  summary(test_1_hetero)$tTable[2, ]))
+
+stats$variable = c("Fusion")
+
+stats$comparison = "NiV 167 - NiV"
+
+stats$test = "Wald test (t-ratio)"
+
+stats = stats[, c("variable", "comparison", "test", "t-value", "p-value", "Value", "Std.Error")]
+colnames(stats) = c("Variable", "Comparison", "Test", "Statistics", "p-value", "Estimate", "se")
+
+stats = stats[order(stats$Variable), ]
+
+stats = stats %>% mutate_if(is.numeric, round, digits = 2)
+
+stats[stats$p_value < 0.001, "p-value"] = "< 0.001"
+
+stats$Estimate = paste0(stats$Estimate, " ± ", stats$se)
+
+stats = stats[, c("Variable", "Comparison", "Test", "Statistics", "p-value", "Estimate")]
+
+kable(stats, digits = 2, row.names = F, caption =
+        "Analysis of the effect of HA-tag on fusion in NiV mutants. The effect of virus genotype on the variable of interest was quantified with a Wald test (reporting an F-value) obtained from a mixed model allowing for heterogeneous variance among groups (here tagged vs untagged) and including a random effect representing the experimental session. Fusion was quantified as number of nuclei included in syncytia, and fusion indices as number of nuclei included in syncytia / flow-cytometry signal."
+      ) %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"))
+
+```
+
+### 5.3.2. HeV fusion
+
+Homo: under the homoscedasticity assumption; Hetero: under the heteroscedasticity assumption
+
+```{r}
+
+# Tests
+
+test_1_homo = lme(value ~ virus, random = ~ 1|replicate_bio,
+                    data = subset(NnH, is.element(virus, c("HeV", "HeV_167")) & variable == "fusion_mean"),
+                    method = "ML")
+
+test_1_hetero = lme(value ~ virus, random = ~ 1|replicate_bio,
+                    data = subset(NnH, is.element(virus, c("HeV", "HeV_167")) & variable == "fusion_mean"),
+                    method = "ML",
+                    weights = varIdent(form = ~ 1|virus))
+
+anova(test_1_homo, test_1_hetero)
+anova(test_1_hetero)
+
+# Store and format results
+
+stats = as.data.frame(rbind(
+  summary(test_1_hetero)$tTable[2, ]))
+
+stats$variable = c("Fusion")
+
+stats$comparison = "HeV 167 - HeV"
+
+stats$test = "Wald test (t-ratio)"
+
+stats = stats[, c("variable", "comparison", "test", "t-value", "p-value", "Value", "Std.Error")]
+colnames(stats) = c("Variable", "Comparison", "Test", "Statistics", "p-value", "Estimate", "se")
+
+stats = stats[order(stats$Variable), ]
+
+stats = stats %>% mutate_if(is.numeric, round, digits = 2)
+
+stats[stats$p_value < 0.001, "p-value"] = "< 0.001"
+
+stats$Estimate = paste0(stats$Estimate, " ± ", stats$se)
+
+stats = stats[, c("Variable", "Comparison", "Test", "Statistics", "p-value", "Estimate")]
+
+kable(stats, digits = 2, row.names = F, caption =
+        "Analysis of the effect of HA-tag on fusion in HeV mutants. The effect of virus genotype on the variable of interest was quantified with a Wald test (reporting an F-value) obtained from a mixed model allowing for heterogeneous variance among groups (here tagged vs untagged) and including a random effect representing the experimental session. Fusion was quantified as number of nuclei included in syncytia, and fusion indices as number of nuclei included in syncytia / flow-cytometry signal."
+      ) %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"))
+
+```
+
+<!--
+
+### 5.3.3. CSE
+
+Homo: under the homoscedasticity assumption; Hetero: under the heteroscedasticity assumption
+
+```{r}
+
+# Tests
+
+test_1_homo = lme(value ~ virus, random = ~ 1|replicate_bio,
+                    data = subset(NnH, variable == "CSE_F"),
+                    method = "ML")
+
+test_1_hetero = lme(value ~ virus, random = ~ 1|replicate_bio,
+                    data = subset(NnH, variable == "CSE_F"),
+                    method = "ML",
+                    weights = varIdent(form = ~ 1|virus))
+
+anova(test_1_homo, test_1_hetero)
+anova(test_1_hetero)
+
+# Store and format results
+
+stats = as.data.frame(rbind(
+  summary(test_1_hetero)$tTable[2, ]))
+
+stats$variable = c("Fusion")
+
+stats$comparison = "HeV - NiV"
+
+stats$test = "Wald test (t-ratio)"
+
+stats = stats[, c("variable", "comparison", "test", "t-value", "p-value", "Value", "Std.Error")]
+colnames(stats) = c("Variable", "Comparison", "Test", "Statistics", "p-value", "Estimate", "se")
+
+stats = stats[order(stats$Variable), ]
+
+stats = stats %>% mutate_if(is.numeric, round, digits = 2)
+
+stats[stats$p_value < 0.001, "p-value"] = "< 0.001"
+
+stats$Estimate = paste0(stats$Estimate, " ± ", stats$se)
+
+stats = stats[, c("Variable", "Comparison", "Test", "Statistics", "p-value", "Estimate")]
+
+kable(stats, digits = 2, row.names = F) %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"))
+
+```
+
+-->
+
+```{r}
+
+# clean working space
+remove(NnH, NnH_CSE_aggr, NnH_CSE_fusion_aggr, NnH_fusion_aggr)
+remove(plot_1, plot_2, patchwork)
+remove(test_1_hetero, test_1_homo, stats)
+
+```

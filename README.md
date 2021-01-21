@@ -32,4 +32,4 @@ Cedar virus (CedV) is a nonpathogenic member of the Henipavirus (HNV) genus of e
 
 ## Directories
 - ``data_clean``: data files in comma-separated values (``.csv``) formats (will be made available upon manuscript publication)
-- ``scripts``: all code, including data preprocessing, statistical analyses and figure generation; includes scripts as Rmarkdown (.Rmd), HTML (.html) and R (.R)
+- ``scripts``: all code, including data preprocessing, statistical analyses and figure generation; includes scripts as R (``.R``), Rmarkdown (``.Rmd``) and HTML (``.html``)

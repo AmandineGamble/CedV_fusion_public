@@ -1,14 +1,14 @@
 ---
 title: "CedV fusion"
 author: "Amandine Gamble"
-date: "21 November 2020"
+date: "`r format(Sys.time(), '%d %B %Y')`"
 output:
   html_document:
     code_folding: show
     theme: united
     toc: yes
     toc_float: 
-      collapsed: false
+      collapsed: true
 editor_options:
   chunk_output_type: console
 ---
@@ -36,6 +36,9 @@ knitr::opts_chunk$set(warning = F)
 
 # working directory
 path = "D:/work/postdoc_UCLA/1_project_PREEMPT/5_models/6_CedV_Yao/CedV_fusion"
+
+# export the corresponding R file
+# knitr::purl("scripts/data_analysis.Rmd", output = paste0(path, "/scripts/data_analysis.R"), documentation = 2)
 
 # source file
 file = "data_clean/Yeo_CedV_fusion.csv"
@@ -118,7 +121,7 @@ data[data$replicate_tec == "", "replicate_tec"] = NA
 
 ```
 
-# 1. CedV / NiV comparison (Figure 2)
+# 1. CedV / NiV comparison
 
 ## 1.1. Data exploration
 
@@ -447,7 +450,7 @@ remove(test_1_hetero, test_1_homo, test_2_hetero, test_2_homo, test_3_hetero, te
 
 ```
 
-# 2. Headless mutant exploration (Figure 3)
+# 2. Headless mutant exploration
 
 ## 2.1. Data exploration
 
@@ -1292,7 +1295,7 @@ remove(test_1_hetero, test_1_homo, tukey_1, stats, tukey)
 
 ```
 
-# 3. Tag effect exploration (Figure 4)
+# 3. Tag effect exploration
 
 ## 3.1. Data exploration
 
@@ -1920,7 +1923,7 @@ remove(test_1_hetero, test_1_homo, test_2_hetero, test_2_homo, test_3_hetero, te
 
 ```
 
-# 4. Avidity selected mutants (Figure 5)
+# 4. Avidity selected mutants
 
 ## 4.1. Data exploration
 
@@ -2098,7 +2101,7 @@ remove(test_1_hetero, test_1_homo, stats)
 
 ```
 
-# 5. Tagged NiV and HeV mutants (Figure S1)
+# 5. Tagged NiV and HeV mutants
 
 ## 5.1. Data exploration
 
@@ -2520,9 +2523,6 @@ remove(plot_1, plot_2)
 remove(test_1_hetero, test_1_homo, stats)
 
 ```
-
-
-
 
 ```{r}
 

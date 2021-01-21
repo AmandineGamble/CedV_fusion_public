@@ -11,7 +11,6 @@
 
 <meta name="author" content="Amandine Gamble" />
 
-<meta name="date" content="2020-11-21" />
 
 <title>CedV fusion</title>
 
@@ -1745,12 +1744,6 @@ div.tocify {
   border-radius: 0px;
 }
 
-.tocify-subheader {
-  display: inline;
-}
-.tocify-subheader .tocify-item {
-  font-size: 0.95em;
-}
 
 </style>
 
@@ -1790,7 +1783,7 @@ div.tocify {
 
 <h1 class="title toc-ignore">CedV fusion</h1>
 <h4 class="author">Amandine Gamble</h4>
-<h4 class="date">21 November 2020</h4>
+<h4 class="date">21 janvier 2021</h4>
 
 </div>
 
@@ -1810,6 +1803,9 @@ div.tocify {
 knitr::opts_chunk$set(warning = F) </code></pre>
 <pre class="r"><code># working directory
 path = &quot;D:/work/postdoc_UCLA/1_project_PREEMPT/5_models/6_CedV_Yao/CedV_fusion&quot;
+
+# export the corresponding R file
+# knitr::purl(&quot;scripts/data_analysis.Rmd&quot;, output = paste0(path, &quot;/scripts/data_analysis.R&quot;), documentation = 2)
 
 # source file
 file = &quot;data_clean/Yeo_CedV_fusion.csv&quot;
@@ -1884,8 +1880,8 @@ data$replicate_bio = substr(data$replicate, 5, 5)
 data$replicate_tec = substr(data$replicate, 7, 7)
 data[data$replicate_tec == &quot;&quot;, &quot;replicate_tec&quot;] = NA</code></pre>
 </div>
-<div id="cedv-niv-comparison-figure-2" class="section level1">
-<h1>1. CedV / NiV comparison (Figure 2)</h1>
+<div id="cedv-niv-comparison" class="section level1">
+<h1>1. CedV / NiV comparison</h1>
 <div id="data-exploration" class="section level2">
 <h2>1.1. Data exploration</h2>
 <div id="cse-and-fusion" class="section level3">
@@ -2397,8 +2393,8 @@ remove(test_1_hetero, test_1_homo, test_2_hetero, test_2_homo, test_3_hetero, te
 </div>
 </div>
 </div>
-<div id="headless-mutant-exploration-figure-3" class="section level1">
-<h1>2. Headless mutant exploration (Figure 3)</h1>
+<div id="headless-mutant-exploration" class="section level1">
+<h1>2. Headless mutant exploration</h1>
 <div id="data-exploration-1" class="section level2">
 <h2>2.1. Data exploration</h2>
 <div id="cedv-mutant-fusion" class="section level3">
@@ -5707,8 +5703,8 @@ remove(test_1_hetero, test_1_homo, tukey_1, stats, tukey)</code></pre>
 </div>
 </div>
 </div>
-<div id="tag-effect-exploration-figure-4" class="section level1">
-<h1>3. Tag effect exploration (Figure 4)</h1>
+<div id="tag-effect-exploration" class="section level1">
+<h1>3. Tag effect exploration</h1>
 <div id="data-exploration-2" class="section level2">
 <h2>3.1. Data exploration</h2>
 <div id="cedv-cse-and-fusion" class="section level3">
@@ -6733,8 +6729,8 @@ remove(test_1_hetero, test_1_homo, test_2_hetero, test_2_homo, test_3_hetero, te
 </div>
 </div>
 </div>
-<div id="avidity-selected-mutants-figure-5" class="section level1">
-<h1>4. Avidity selected mutants (Figure 5)</h1>
+<div id="avidity-selected-mutants" class="section level1">
+<h1>4. Avidity selected mutants</h1>
 <div id="data-exploration-3" class="section level2">
 <h2>4.1. Data exploration</h2>
 <div id="avidity" class="section level3">
@@ -6947,8 +6943,8 @@ remove(plot_1, plot_2)
 remove(test_1_hetero, test_1_homo, stats)</code></pre>
 </div>
 </div>
-<div id="tagged-niv-and-hev-mutants-figure-s1" class="section level1">
-<h1>5. Tagged NiV and HeV mutants (Figure S1)</h1>
+<div id="tagged-niv-and-hev-mutants" class="section level1">
+<h1>5. Tagged NiV and HeV mutants</h1>
 <div id="data-exploration-4" class="section level2">
 <h2>5.1. Data exploration</h2>
 <pre class="r"><code># subset data of interest
@@ -7627,7 +7623,7 @@ $(document).ready(function ()  {
       ignoreSelector: ".toc-ignore",
       scrollTo: 0
     };
-    options.showAndHide = false;
+    options.showAndHide = true;
     options.smoothScroll = true;
 
     // tocify

@@ -1865,7 +1865,9 @@ data = read.table(file, sep = &quot;;&quot;, header = T)</code></pre>
 data$virus = factor(data$virus, levels = c(&quot;Vector&quot;, 
                                            &quot;NiV&quot;, &quot;NiV_167&quot;, &quot;NiV_170&quot;,
                                            &quot;HeV&quot;, &quot;HeV_167&quot;, &quot;HeV_170&quot;,
-                                           &quot;CedV&quot;, &quot;CedV_188&quot;, &quot;CedV_190&quot;, &quot;CedV_193&quot;,  &quot;CedV_196&quot;, &quot;CedV_199&quot;, &quot;CedV_202&quot;))
+                                           &quot;CedV&quot;, &quot;CedV_188&quot;, &quot;CedV_190&quot;, 
+                                           &quot;CedV_193&quot;,  &quot;CedV_196&quot;, &quot;CedV_199&quot;, &quot;CedV_202&quot;,
+                                           &quot;NiVG_CedVF&quot;, &quot;NiVG_CedVF_167&quot;, &quot;CedVG_NiVF&quot;, &quot;CedVG_NiVF_193&quot;))
 data$variable = factor(data$variable, levels = c(&quot;CSE_G&quot;, &quot;CSE_F&quot;, 
                                                  &quot;fusion&quot;, &quot;fusion_mean&quot;, 
                                                  &quot;Tetramer&quot;, &quot;Dimer&quot;, &quot;Monomer1&quot;, &quot;Monomer2&quot;,
@@ -2108,7 +2110,7 @@ colnames(stats) = c(&quot;Variable&quot;, &quot;Comparison&quot;, &quot;Test&quo
 
 stats = stats[order(stats$Variable), ]
 
-stats = stats %&gt;% mutate_if(is.numeric, round, digits = 2)
+stats = stats %&gt;% mutate_if(is.numeric, round, digits = 3)
 
 stats[stats$p_value &lt; 0.001, &quot;p-value&quot;] = &quot;&lt; 0.001&quot;
 
@@ -2116,7 +2118,7 @@ stats$Estimate = paste0(stats$Estimate, &quot; ± &quot;, stats$se)
 
 stats = stats[, c(&quot;Variable&quot;, &quot;Comparison&quot;, &quot;Test&quot;, &quot;Statistics&quot;, &quot;p-value&quot;, &quot;Estimate&quot;)]
 
-kable(stats, digits = 2, row.names = F, caption = 
+kable(stats, digits = 3, row.names = F, caption = 
         &quot;Comparison of fusion performances between NiV and CedV with a 1:1 CSE ratio. The effect of virus genotype on the variable of interest was quantified with a Wald test (reporting a t-value) obtained from a mixed model allowing for heterogeneous variance among groups (here viruses) and including a random effect representing the experimental session. Fusion as number of nuclei included in syncytia, and fusion indices as number of nuclei included in syncytia / flow-cytometry signal.&quot;
       ) %&gt;%
   kable_styling(bootstrap_options = c(&quot;striped&quot;, &quot;hover&quot;, &quot;condensed&quot;))</code></pre>
@@ -2158,13 +2160,13 @@ CedV - NiV
 Wald test (t-ratio)
 </td>
 <td style="text-align:right;">
--6.65
+-6.655
 </td>
 <td style="text-align:right;">
 0
 </td>
 <td style="text-align:left;">
--87.21 ± 13.1
+-87.212 ± 13.105
 </td>
 </tr>
 <tr>
@@ -2178,13 +2180,13 @@ CedV - NiV
 Wald test (t-ratio)
 </td>
 <td style="text-align:right;">
--8.08
+-8.081
 </td>
 <td style="text-align:right;">
 0
 </td>
 <td style="text-align:left;">
--0.4 ± 0.05
+-0.397 ± 0.049
 </td>
 </tr>
 <tr>
@@ -2198,13 +2200,13 @@ CedV - NiV
 Wald test (t-ratio)
 </td>
 <td style="text-align:right;">
--18.46
+-18.455
 </td>
 <td style="text-align:right;">
 0
 </td>
 <td style="text-align:left;">
--1.09 ± 0.06
+-1.091 ± 0.059
 </td>
 </tr>
 </tbody>
@@ -2287,7 +2289,7 @@ colnames(stats) = c(&quot;Variable&quot;, &quot;Comparison&quot;, &quot;Test&quo
 
 stats = stats[order(stats$Variable), ]
 
-stats = stats %&gt;% mutate_if(is.numeric, round, digits = 2)
+stats = stats %&gt;% mutate_if(is.numeric, round, digits = 3)
 
 stats[stats$p_value &lt; 0.001, &quot;p-value&quot;] = &quot;&lt; 0.001&quot;
 
@@ -2295,7 +2297,7 @@ stats$Estimate = paste0(stats$Estimate, &quot; ± &quot;, stats$se)
 
 stats = stats[, c(&quot;Variable&quot;, &quot;Comparison&quot;, &quot;Test&quot;, &quot;Statistics&quot;, &quot;p-value&quot;, &quot;Estimate&quot;)]
 
-kable(stats, digits = 2, row.names = F, caption = 
+kable(stats, digits = 3, row.names = F, caption = 
         &quot;Comparison of fusion performances between NiV and CedV with a 2:1 CSE ratio. The effect of virus genotype on the variable of interest was quantified with a Wald test (reporting a t-value) obtained from a mixed model allowing for heterogeneous variance among groups (here viruses) and including a random effect representing the experimental session. Fusion as number of nuclei included in syncytia, and fusion indices as number of nuclei included in syncytia / flow-cytometry signal.&quot;
       ) %&gt;%
   kable_styling(bootstrap_options = c(&quot;striped&quot;, &quot;hover&quot;, &quot;condensed&quot;))</code></pre>
@@ -2337,13 +2339,13 @@ CedV - NiV
 Wald test (t-ratio)
 </td>
 <td style="text-align:right;">
--7.51
+-7.506
 </td>
 <td style="text-align:right;">
 0
 </td>
 <td style="text-align:left;">
--193.45 ± 25.77
+-193.45 ± 25.773
 </td>
 </tr>
 <tr>
@@ -2357,13 +2359,13 @@ CedV - NiV
 Wald test (t-ratio)
 </td>
 <td style="text-align:right;">
--13.28
+-13.278
 </td>
 <td style="text-align:right;">
 0
 </td>
 <td style="text-align:left;">
--0.56 ± 0.04
+-0.556 ± 0.042
 </td>
 </tr>
 <tr>
@@ -2377,13 +2379,13 @@ CedV - NiV
 Wald test (t-ratio)
 </td>
 <td style="text-align:right;">
--16.30
+-16.297
 </td>
 <td style="text-align:right;">
 0
 </td>
 <td style="text-align:left;">
--0.87 ± 0.05
+-0.87 ± 0.053
 </td>
 </tr>
 </tbody>
@@ -2793,7 +2795,7 @@ stats = rbind(stats, tukey)
 
 stats = stats[order(stats$Variable), ]
 
-stats = stats %&gt;% mutate_if(is.numeric, round, digits = 2)
+stats = stats %&gt;% mutate_if(is.numeric, round, digits = 3)
 
 stats[stats$p_value &lt; 0.001, &quot;p_value&quot;] = &quot;&lt; 0.001&quot;
 
@@ -2802,7 +2804,7 @@ stats$Estimate = paste0(stats$Estimate, &quot; ± &quot;, stats$se)
 stats = stats[, c(&quot;Variable&quot;, &quot;Comparison&quot;, &quot;Test&quot;, &quot;Statistics&quot;, &quot;p_value&quot;, &quot;Estimate&quot;)]
 stats[stats$Estimate == (&quot;NA ± NA&quot;), &quot;Estimate&quot;] = NA
 
-kable(stats, digits = 2, row.names = F,
+kable(stats, digits = 3, row.names = F,
       caption = 
         &quot;Comparison of fusion performances among CedV mutants in HEK 293T cells. The effect of virus genotype on the variable of interest was quantified with a Wald test (reporting an F-value) obtained from a mixed model allowing for heterogeneous variance among groups (here G genotype) and including a random effect representing the experimental session. As this experiment included more than two groups, post-hoc pairwise comparisons between genotypes were then performed using a Tukey test (reporting a t-ratio). Fusion was quantified as number of nuclei included in syncytia..&quot;
       ) %&gt;%
@@ -2844,7 +2846,7 @@ Fusion
 Wald test (F-value)
 </td>
 <td style="text-align:right;">
-2017.86
+2017.859
 </td>
 <td style="text-align:left;">
 &lt; 0.001
@@ -2863,13 +2865,13 @@ Vector - CedV
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
--46.83
+-46.830
 </td>
 <td style="text-align:left;">
 &lt; 0.001
 </td>
 <td style="text-align:left;">
--69.6 ± 1.49
+-69.6 ± 1.486
 </td>
 </tr>
 <tr>
@@ -2883,13 +2885,13 @@ Vector - CedV_188
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
--35.75
+-35.749
 </td>
 <td style="text-align:left;">
 &lt; 0.001
 </td>
 <td style="text-align:left;">
--89.33 ± 2.5
+-89.333 ± 2.499
 </td>
 </tr>
 <tr>
@@ -2903,13 +2905,13 @@ Vector - CedV_190
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
--28.71
+-28.711
 </td>
 <td style="text-align:left;">
 &lt; 0.001
 </td>
 <td style="text-align:left;">
--148.07 ± 5.16
+-148.067 ± 5.157
 </td>
 </tr>
 <tr>
@@ -2923,13 +2925,13 @@ Vector - CedV_193
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
--25.64
+-25.643
 </td>
 <td style="text-align:left;">
 &lt; 0.001
 </td>
 <td style="text-align:left;">
--286.2 ± 11.16
+-286.2 ± 11.161
 </td>
 </tr>
 <tr>
@@ -2943,13 +2945,13 @@ Vector - CedV_196
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
--57.01
+-57.011
 </td>
 <td style="text-align:left;">
 &lt; 0.001
 </td>
 <td style="text-align:left;">
--214.6 ± 3.76
+-214.6 ± 3.764
 </td>
 </tr>
 <tr>
@@ -2963,13 +2965,13 @@ Vector - CedV_199
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
--62.28
+-62.282
 </td>
 <td style="text-align:left;">
 &lt; 0.001
 </td>
 <td style="text-align:left;">
--210 ± 3.37
+-210 ± 3.372
 </td>
 </tr>
 <tr>
@@ -2983,13 +2985,13 @@ Vector - CedV_202
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
--45.66
+-45.657
 </td>
 <td style="text-align:left;">
 &lt; 0.001
 </td>
 <td style="text-align:left;">
--100.4 ± 2.2
+-100.4 ± 2.199
 </td>
 </tr>
 <tr>
@@ -3003,13 +3005,13 @@ CedV - CedV_188
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
--6.79
+-6.791
 </td>
 <td style="text-align:left;">
 &lt; 0.001
 </td>
 <td style="text-align:left;">
--19.73 ± 2.91
+-19.733 ± 2.906
 </td>
 </tr>
 <tr>
@@ -3023,13 +3025,13 @@ CedV - CedV_190
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
--14.62
+-14.623
 </td>
 <td style="text-align:left;">
 &lt; 0.001
 </td>
 <td style="text-align:left;">
--78.47 ± 5.37
+-78.467 ± 5.366
 </td>
 </tr>
 <tr>
@@ -3043,13 +3045,13 @@ CedV - CedV_193
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
--19.24
+-19.238
 </td>
 <td style="text-align:left;">
 &lt; 0.001
 </td>
 <td style="text-align:left;">
--216.6 ± 11.26
+-216.6 ± 11.259
 </td>
 </tr>
 <tr>
@@ -3063,13 +3065,13 @@ CedV - CedV_196
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
--35.84
+-35.839
 </td>
 <td style="text-align:left;">
 &lt; 0.001
 </td>
 <td style="text-align:left;">
--145 ± 4.05
+-145 ± 4.046
 </td>
 </tr>
 <tr>
@@ -3083,13 +3085,13 @@ CedV - CedV_199
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
--38.11
+-38.115
 </td>
 <td style="text-align:left;">
 &lt; 0.001
 </td>
 <td style="text-align:left;">
--140.4 ± 3.68
+-140.4 ± 3.684
 </td>
 </tr>
 <tr>
@@ -3103,13 +3105,13 @@ CedV - CedV_202
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
--11.61
+-11.612
 </td>
 <td style="text-align:left;">
 &lt; 0.001
 </td>
 <td style="text-align:left;">
--30.8 ± 2.65
+-30.8 ± 2.652
 </td>
 </tr>
 <tr>
@@ -3123,13 +3125,13 @@ CedV_188 - CedV_190
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
--10.25
+-10.250
 </td>
 <td style="text-align:left;">
 &lt; 0.001
 </td>
 <td style="text-align:left;">
--58.73 ± 5.73
+-58.733 ± 5.73
 </td>
 </tr>
 <tr>
@@ -3143,13 +3145,13 @@ CedV_188 - CedV_193
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
--17.21
+-17.213
 </td>
 <td style="text-align:left;">
 &lt; 0.001
 </td>
 <td style="text-align:left;">
--196.87 ± 11.44
+-196.867 ± 11.437
 </td>
 </tr>
 <tr>
@@ -3163,13 +3165,13 @@ CedV_188 - CedV_196
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
--27.73
+-27.731
 </td>
 <td style="text-align:left;">
 &lt; 0.001
 </td>
 <td style="text-align:left;">
--125.27 ± 4.52
+-125.267 ± 4.517
 </td>
 </tr>
 <tr>
@@ -3183,13 +3185,13 @@ CedV_188 - CedV_199
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
--28.76
+-28.759
 </td>
 <td style="text-align:left;">
 &lt; 0.001
 </td>
 <td style="text-align:left;">
--120.67 ± 4.2
+-120.667 ± 4.196
 </td>
 </tr>
 <tr>
@@ -3203,13 +3205,13 @@ CedV_188 - CedV_202
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
--3.33
+-3.326
 </td>
 <td style="text-align:left;">
-0.07
+0.071
 </td>
 <td style="text-align:left;">
--11.07 ± 3.33
+-11.067 ± 3.327
 </td>
 </tr>
 <tr>
@@ -3223,13 +3225,13 @@ CedV_190 - CedV_193
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
--11.24
+-11.235
 </td>
 <td style="text-align:left;">
 &lt; 0.001
 </td>
 <td style="text-align:left;">
--138.13 ± 12.29
+-138.133 ± 12.295
 </td>
 </tr>
 <tr>
@@ -3243,13 +3245,13 @@ CedV_190 - CedV_196
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
--10.42
+-10.422
 </td>
 <td style="text-align:left;">
 &lt; 0.001
 </td>
 <td style="text-align:left;">
--66.53 ± 6.38
+-66.533 ± 6.384
 </td>
 </tr>
 <tr>
@@ -3263,13 +3265,13 @@ CedV_190 - CedV_199
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
--10.05
+-10.053
 </td>
 <td style="text-align:left;">
 &lt; 0.001
 </td>
 <td style="text-align:left;">
--61.93 ± 6.16
+-61.933 ± 6.161
 </td>
 </tr>
 <tr>
@@ -3283,13 +3285,13 @@ CedV_190 - CedV_202
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
-8.50
+8.503
 </td>
 <td style="text-align:left;">
 &lt; 0.001
 </td>
 <td style="text-align:left;">
-47.67 ± 5.61
+47.667 ± 5.606
 </td>
 </tr>
 <tr>
@@ -3303,13 +3305,13 @@ CedV_193 - CedV_196
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
-6.08
+6.079
 </td>
 <td style="text-align:left;">
-&lt; 0.001
+0.001
 </td>
 <td style="text-align:left;">
-71.6 ± 11.78
+71.6 ± 11.778
 </td>
 </tr>
 <tr>
@@ -3323,13 +3325,13 @@ CedV_193 - CedV_199
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
-6.54
+6.536
 </td>
 <td style="text-align:left;">
 &lt; 0.001
 </td>
 <td style="text-align:left;">
-76.2 ± 11.66
+76.2 ± 11.659
 </td>
 </tr>
 <tr>
@@ -3343,13 +3345,13 @@ CedV_193 - CedV_202
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
-16.33
+16.334
 </td>
 <td style="text-align:left;">
 &lt; 0.001
 </td>
 <td style="text-align:left;">
-185.8 ± 11.38
+185.8 ± 11.375
 </td>
 </tr>
 <tr>
@@ -3363,13 +3365,13 @@ CedV_196 - CedV_199
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
-0.91
+0.910
 </td>
 <td style="text-align:left;">
 0.98
 </td>
 <td style="text-align:left;">
-4.6 ± 5.05
+4.6 ± 5.053
 </td>
 </tr>
 <tr>
@@ -3383,13 +3385,13 @@ CedV_196 - CedV_202
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
-26.20
+26.202
 </td>
 <td style="text-align:left;">
 &lt; 0.001
 </td>
 <td style="text-align:left;">
-114.2 ± 4.36
+114.2 ± 4.358
 </td>
 </tr>
 <tr>
@@ -3403,13 +3405,13 @@ CedV_199 - CedV_202
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
-27.23
+27.234
 </td>
 <td style="text-align:left;">
 &lt; 0.001
 </td>
 <td style="text-align:left;">
-109.6 ± 4.02
+109.6 ± 4.024
 </td>
 </tr>
 </tbody>
@@ -3468,7 +3470,7 @@ stats = rbind(stats, tukey)
 
 stats = stats[order(stats$Variable), ]
 
-stats = stats %&gt;% mutate_if(is.numeric, round, digits = 2)
+stats = stats %&gt;% mutate_if(is.numeric, round, digits = 3)
 
 stats[stats$p_value &lt; 0.001, &quot;p_value&quot;] = &quot;&lt; 0.001&quot;
 
@@ -3477,7 +3479,7 @@ stats$Estimate = paste0(stats$Estimate, &quot; ± &quot;, stats$se)
 stats = stats[, c(&quot;Variable&quot;, &quot;Comparison&quot;, &quot;Test&quot;, &quot;Statistics&quot;, &quot;p_value&quot;, &quot;Estimate&quot;)]
 stats[stats$Estimate == (&quot;NA ± NA&quot;), &quot;Estimate&quot;] = NA
 
-kable(stats, digits = 2, row.names = F, caption = 
+kable(stats, digits = 3, row.names = F, caption = 
         &quot;Comparison of fusion performances among CedV mutants in CHO pgsA-745 cells. The effect of virus genotype on the variable of interest was quantified with a Wald test (reporting an F-value) obtained from a mixed model allowing for heterogeneous variance among groups (here G genotype) and including a random effect representing the experimental session. As this experiment included more than two groups, post-hoc pairwise comparisons between genotypes were then performed using a Tukey test (reporting a t-ratio). Fusion was quantified as number of nuclei included in syncytia.&quot;
       ) %&gt;%
   kable_styling(bootstrap_options = c(&quot;striped&quot;, &quot;hover&quot;, &quot;condensed&quot;))</code></pre>
@@ -3518,7 +3520,7 @@ Fusion
 Wald test (F-value)
 </td>
 <td style="text-align:right;">
-237.36
+237.361
 </td>
 <td style="text-align:left;">
 &lt; 0.001
@@ -3537,13 +3539,13 @@ Vector - CedV
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
-0.00
+0.000
 </td>
 <td style="text-align:left;">
 1
 </td>
 <td style="text-align:left;">
-0 ± 4.37
+0 ± 4.371
 </td>
 </tr>
 <tr>
@@ -3557,13 +3559,13 @@ Vector - CedV_188
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
--21.72
+-21.723
 </td>
 <td style="text-align:left;">
 &lt; 0.001
 </td>
 <td style="text-align:left;">
--67.13 ± 3.09
+-67.133 ± 3.09
 </td>
 </tr>
 <tr>
@@ -3577,13 +3579,13 @@ Vector - CedV_190
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
--26.04
+-26.038
 </td>
 <td style="text-align:left;">
 &lt; 0.001
 </td>
 <td style="text-align:left;">
--100.2 ± 3.85
+-100.2 ± 3.848
 </td>
 </tr>
 <tr>
@@ -3597,13 +3599,13 @@ Vector - CedV_193
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
--18.30
+-18.299
 </td>
 <td style="text-align:left;">
 &lt; 0.001
 </td>
 <td style="text-align:left;">
--174.07 ± 9.51
+-174.067 ± 9.513
 </td>
 </tr>
 <tr>
@@ -3617,13 +3619,13 @@ Vector - CedV_196
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
--23.56
+-23.558
 </td>
 <td style="text-align:left;">
 &lt; 0.001
 </td>
 <td style="text-align:left;">
--133.2 ± 5.65
+-133.2 ± 5.654
 </td>
 </tr>
 <tr>
@@ -3637,13 +3639,13 @@ Vector - CedV_199
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
--22.92
+-22.922
 </td>
 <td style="text-align:left;">
 &lt; 0.001
 </td>
 <td style="text-align:left;">
--126.4 ± 5.51
+-126.4 ± 5.514
 </td>
 </tr>
 <tr>
@@ -3657,13 +3659,13 @@ Vector - CedV_202
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
--20.88
+-20.880
 </td>
 <td style="text-align:left;">
 &lt; 0.001
 </td>
 <td style="text-align:left;">
--65.73 ± 3.15
+-65.733 ± 3.148
 </td>
 </tr>
 <tr>
@@ -3677,13 +3679,13 @@ CedV - CedV_188
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
--21.72
+-21.723
 </td>
 <td style="text-align:left;">
 &lt; 0.001
 </td>
 <td style="text-align:left;">
--67.13 ± 3.09
+-67.133 ± 3.09
 </td>
 </tr>
 <tr>
@@ -3697,13 +3699,13 @@ CedV - CedV_190
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
--26.04
+-26.038
 </td>
 <td style="text-align:left;">
 &lt; 0.001
 </td>
 <td style="text-align:left;">
--100.2 ± 3.85
+-100.2 ± 3.848
 </td>
 </tr>
 <tr>
@@ -3717,13 +3719,13 @@ CedV - CedV_193
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
--18.30
+-18.299
 </td>
 <td style="text-align:left;">
 &lt; 0.001
 </td>
 <td style="text-align:left;">
--174.07 ± 9.51
+-174.067 ± 9.513
 </td>
 </tr>
 <tr>
@@ -3737,13 +3739,13 @@ CedV - CedV_196
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
--23.56
+-23.558
 </td>
 <td style="text-align:left;">
 &lt; 0.001
 </td>
 <td style="text-align:left;">
--133.2 ± 5.65
+-133.2 ± 5.654
 </td>
 </tr>
 <tr>
@@ -3757,13 +3759,13 @@ CedV - CedV_199
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
--22.92
+-22.922
 </td>
 <td style="text-align:left;">
 &lt; 0.001
 </td>
 <td style="text-align:left;">
--126.4 ± 5.51
+-126.4 ± 5.514
 </td>
 </tr>
 <tr>
@@ -3777,13 +3779,13 @@ CedV - CedV_202
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
--20.88
+-20.880
 </td>
 <td style="text-align:left;">
 &lt; 0.001
 </td>
 <td style="text-align:left;">
--65.73 ± 3.15
+-65.733 ± 3.148
 </td>
 </tr>
 <tr>
@@ -3797,13 +3799,13 @@ CedV_188 - CedV_190
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
--14.42
+-14.421
 </td>
 <td style="text-align:left;">
 &lt; 0.001
 </td>
 <td style="text-align:left;">
--33.07 ± 2.29
+-33.067 ± 2.293
 </td>
 </tr>
 <tr>
@@ -3817,13 +3819,13 @@ CedV_188 - CedV_193
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
--11.89
+-11.886
 </td>
 <td style="text-align:left;">
 &lt; 0.001
 </td>
 <td style="text-align:left;">
--106.93 ± 9
+-106.933 ± 8.997
 </td>
 </tr>
 <tr>
@@ -3837,13 +3839,13 @@ CedV_188 - CedV_196
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
--13.95
+-13.954
 </td>
 <td style="text-align:left;">
 &lt; 0.001
 </td>
 <td style="text-align:left;">
--66.07 ± 4.73
+-66.067 ± 4.735
 </td>
 </tr>
 <tr>
@@ -3857,13 +3859,13 @@ CedV_188 - CedV_199
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
--12.98
+-12.977
 </td>
 <td style="text-align:left;">
 &lt; 0.001
 </td>
 <td style="text-align:left;">
--59.27 ± 4.57
+-59.267 ± 4.567
 </td>
 </tr>
 <tr>
@@ -3877,10 +3879,10 @@ CedV_188 - CedV_202
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
-2.33
+2.333
 </td>
 <td style="text-align:left;">
-0.34
+0.341
 </td>
 <td style="text-align:left;">
 1.4 ± 0.6
@@ -3897,13 +3899,13 @@ CedV_190 - CedV_193
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
--7.96
+-7.956
 </td>
 <td style="text-align:left;">
 &lt; 0.001
 </td>
 <td style="text-align:left;">
--73.87 ± 9.28
+-73.867 ± 9.284
 </td>
 </tr>
 <tr>
@@ -3917,13 +3919,13 @@ CedV_190 - CedV_196
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
--6.27
+-6.273
 </td>
 <td style="text-align:left;">
 &lt; 0.001
 </td>
 <td style="text-align:left;">
--33 ± 5.26
+-33 ± 5.261
 </td>
 </tr>
 <tr>
@@ -3937,10 +3939,10 @@ CedV_190 - CedV_199
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
--5.13
+-5.127
 </td>
 <td style="text-align:left;">
-&lt; 0.001
+0.003
 </td>
 <td style="text-align:left;">
 -26.2 ± 5.11
@@ -3957,13 +3959,13 @@ CedV_190 - CedV_202
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
-14.54
+14.542
 </td>
 <td style="text-align:left;">
 &lt; 0.001
 </td>
 <td style="text-align:left;">
-34.47 ± 2.37
+34.467 ± 2.37
 </td>
 </tr>
 <tr>
@@ -3977,13 +3979,13 @@ CedV_193 - CedV_196
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
-4.02
+4.020
 </td>
 <td style="text-align:left;">
-0.02
+0.021
 </td>
 <td style="text-align:left;">
-40.87 ± 10.17
+40.867 ± 10.166
 </td>
 </tr>
 <tr>
@@ -3997,13 +3999,13 @@ CedV_193 - CedV_199
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
-4.72
+4.724
 </td>
 <td style="text-align:left;">
-0.01
+0.006
 </td>
 <td style="text-align:left;">
-47.67 ± 10.09
+47.667 ± 10.089
 </td>
 </tr>
 <tr>
@@ -4017,13 +4019,13 @@ CedV_193 - CedV_202
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
-12.01
+12.015
 </td>
 <td style="text-align:left;">
 &lt; 0.001
 </td>
 <td style="text-align:left;">
-108.33 ± 9.02
+108.333 ± 9.017
 </td>
 </tr>
 <tr>
@@ -4037,13 +4039,13 @@ CedV_196 - CedV_199
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
-1.03
+1.034
 </td>
 <td style="text-align:left;">
-0.96
+0.961
 </td>
 <td style="text-align:left;">
-6.8 ± 6.58
+6.8 ± 6.578
 </td>
 </tr>
 <tr>
@@ -4057,13 +4059,13 @@ CedV_196 - CedV_202
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
-14.14
+14.136
 </td>
 <td style="text-align:left;">
 &lt; 0.001
 </td>
 <td style="text-align:left;">
-67.47 ± 4.77
+67.467 ± 4.773
 </td>
 </tr>
 <tr>
@@ -4077,13 +4079,13 @@ CedV_199 - CedV_202
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
-13.17
+13.170
 </td>
 <td style="text-align:left;">
 &lt; 0.001
 </td>
 <td style="text-align:left;">
-60.67 ± 4.61
+60.667 ± 4.606
 </td>
 </tr>
 </tbody>
@@ -4142,7 +4144,7 @@ stats = rbind(stats, tukey)
 
 stats = stats[order(stats$Variable), ]
 
-stats = stats %&gt;% mutate_if(is.numeric, round, digits = 2)
+stats = stats %&gt;% mutate_if(is.numeric, round, digits = 3)
 
 stats[stats$p_value &lt; 0.001, &quot;p_value&quot;] = &quot;&lt; 0.001&quot;
 
@@ -4151,7 +4153,7 @@ stats$Estimate = paste0(stats$Estimate, &quot; ± &quot;, stats$se)
 stats = stats[, c(&quot;Variable&quot;, &quot;Comparison&quot;, &quot;Test&quot;, &quot;Statistics&quot;, &quot;p_value&quot;, &quot;Estimate&quot;)]
 stats[stats$Estimate == (&quot;NA ± NA&quot;), &quot;Estimate&quot;] = NA
 
-kable(stats, digits = 2, row.names = F, caption = 
+kable(stats, digits = 3, row.names = F, caption = 
         &quot;Comparison of binding affinity for ephrin-B2 among CedV mutants. The effect of virus genotype on the variable of interest was quantified with a Wald test (reporting an F-value) obtained from a mixed model allowing for heterogeneous variance among groups (here G genotype) and including a random effect representing the experimental session. As this experiment included more than two groups, post-hoc pairwise comparisons between genotypes were then performed using a Tukey test (reporting a t-ratio). Affinity was quantified as flow-cytometry signal.&quot;
       ) %&gt;%
   kable_styling(bootstrap_options = c(&quot;striped&quot;, &quot;hover&quot;, &quot;condensed&quot;))</code></pre>
@@ -4192,7 +4194,7 @@ Ephrin-B2 binding
 Wald test (F-value)
 </td>
 <td style="text-align:right;">
-46.05
+46.054
 </td>
 <td style="text-align:left;">
 &lt; 0.001
@@ -4211,13 +4213,13 @@ Vector - CedV
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
--14.60
+-14.596
 </td>
 <td style="text-align:left;">
 &lt; 0.001
 </td>
 <td style="text-align:left;">
--752.1 ± 51.53
+-752.103 ± 51.529
 </td>
 </tr>
 <tr>
@@ -4231,13 +4233,13 @@ Vector - CedV_188
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
--9.63
+-9.632
 </td>
 <td style="text-align:left;">
 &lt; 0.001
 </td>
 <td style="text-align:left;">
--6.28 ± 0.65
+-6.277 ± 0.652
 </td>
 </tr>
 <tr>
@@ -4251,13 +4253,13 @@ Vector - CedV_190
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
--1.39
+-1.389
 </td>
 <td style="text-align:left;">
-0.85
+0.848
 </td>
 <td style="text-align:left;">
--4.7 ± 3.38
+-4.697 ± 3.382
 </td>
 </tr>
 <tr>
@@ -4271,13 +4273,13 @@ Vector - CedV_193
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
--1.48
+-1.484
 </td>
 <td style="text-align:left;">
-0.8
+0.804
 </td>
 <td style="text-align:left;">
--4.76 ± 3.21
+-4.763 ± 3.209
 </td>
 </tr>
 <tr>
@@ -4291,13 +4293,13 @@ Vector - CedV_196
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
--2.67
+-2.667
 </td>
 <td style="text-align:left;">
-0.21
+0.211
 </td>
 <td style="text-align:left;">
--8.67 ± 3.25
+-8.673 ± 3.252
 </td>
 </tr>
 <tr>
@@ -4311,13 +4313,13 @@ Vector - CedV_199
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
--7.16
+-7.162
 </td>
 <td style="text-align:left;">
 &lt; 0.001
 </td>
 <td style="text-align:left;">
--6.55 ± 0.92
+-6.553 ± 0.915
 </td>
 </tr>
 <tr>
@@ -4331,13 +4333,13 @@ Vector - CedV_202
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
--5.39
+-5.393
 </td>
 <td style="text-align:left;">
-&lt; 0.001
+0.002
 </td>
 <td style="text-align:left;">
--6.89 ± 1.28
+-6.893 ± 1.278
 </td>
 </tr>
 <tr>
@@ -4351,13 +4353,13 @@ CedV - CedV_188
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
-14.47
+14.474
 </td>
 <td style="text-align:left;">
 &lt; 0.001
 </td>
 <td style="text-align:left;">
-745.83 ± 51.53
+745.827 ± 51.528
 </td>
 </tr>
 <tr>
@@ -4371,13 +4373,13 @@ CedV - CedV_190
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
-14.47
+14.475
 </td>
 <td style="text-align:left;">
 &lt; 0.001
 </td>
 <td style="text-align:left;">
-747.41 ± 51.63
+747.407 ± 51.635
 </td>
 </tr>
 <tr>
@@ -4391,13 +4393,13 @@ CedV - CedV_193
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
-14.48
+14.477
 </td>
 <td style="text-align:left;">
 &lt; 0.001
 </td>
 <td style="text-align:left;">
-747.34 ± 51.62
+747.34 ± 51.624
 </td>
 </tr>
 <tr>
@@ -4411,13 +4413,13 @@ CedV - CedV_196
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
-14.40
+14.400
 </td>
 <td style="text-align:left;">
 &lt; 0.001
 </td>
 <td style="text-align:left;">
-743.43 ± 51.63
+743.43 ± 51.627
 </td>
 </tr>
 <tr>
@@ -4431,13 +4433,13 @@ CedV - CedV_199
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
-14.47
+14.468
 </td>
 <td style="text-align:left;">
 &lt; 0.001
 </td>
 <td style="text-align:left;">
-745.55 ± 51.53
+745.55 ± 51.532
 </td>
 </tr>
 <tr>
@@ -4451,7 +4453,7 @@ CedV - CedV_202
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
-14.46
+14.459
 </td>
 <td style="text-align:left;">
 &lt; 0.001
@@ -4471,13 +4473,13 @@ CedV_188 - CedV_190
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
-0.47
+0.469
 </td>
 <td style="text-align:left;">
 1
 </td>
 <td style="text-align:left;">
-1.58 ± 3.37
+1.58 ± 3.371
 </td>
 </tr>
 <tr>
@@ -4491,13 +4493,13 @@ CedV_188 - CedV_193
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
-0.47
+0.473
 </td>
 <td style="text-align:left;">
 1
 </td>
 <td style="text-align:left;">
-1.51 ± 3.2
+1.513 ± 3.198
 </td>
 </tr>
 <tr>
@@ -4511,13 +4513,13 @@ CedV_188 - CedV_196
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
--0.74
+-0.740
 </td>
 <td style="text-align:left;">
-0.99
+0.994
 </td>
 <td style="text-align:left;">
--2.4 ± 3.24
+-2.397 ± 3.24
 </td>
 </tr>
 <tr>
@@ -4531,13 +4533,13 @@ CedV_188 - CedV_199
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
--0.32
+-0.317
 </td>
 <td style="text-align:left;">
 1
 </td>
 <td style="text-align:left;">
--0.28 ± 0.87
+-0.277 ± 0.873
 </td>
 </tr>
 <tr>
@@ -4551,13 +4553,13 @@ CedV_188 - CedV_202
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
--0.49
+-0.494
 </td>
 <td style="text-align:left;">
 1
 </td>
 <td style="text-align:left;">
--0.62 ± 1.25
+-0.617 ± 1.249
 </td>
 </tr>
 <tr>
@@ -4571,13 +4573,13 @@ CedV_190 - CedV_193
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
--0.01
+-0.014
 </td>
 <td style="text-align:left;">
 1
 </td>
 <td style="text-align:left;">
--0.07 ± 4.61
+-0.067 ± 4.608
 </td>
 </tr>
 <tr>
@@ -4591,13 +4593,13 @@ CedV_190 - CedV_196
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
--0.86
+-0.857
 </td>
 <td style="text-align:left;">
-0.99
+0.986
 </td>
 <td style="text-align:left;">
--3.98 ± 4.64
+-3.977 ± 4.638
 </td>
 </tr>
 <tr>
@@ -4611,13 +4613,13 @@ CedV_190 - CedV_199
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
--0.54
+-0.541
 </td>
 <td style="text-align:left;">
-1
+0.999
 </td>
 <td style="text-align:left;">
--1.86 ± 3.43
+-1.857 ± 3.431
 </td>
 </tr>
 <tr>
@@ -4631,13 +4633,13 @@ CedV_190 - CedV_202
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
--0.62
+-0.620
 </td>
 <td style="text-align:left;">
-1
+0.998
 </td>
 <td style="text-align:left;">
--2.2 ± 3.55
+-2.197 ± 3.546
 </td>
 </tr>
 <tr>
@@ -4651,13 +4653,13 @@ CedV_193 - CedV_196
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
--0.87
+-0.866
 </td>
 <td style="text-align:left;">
-0.98
+0.985
 </td>
 <td style="text-align:left;">
--3.91 ± 4.51
+-3.91 ± 4.514
 </td>
 </tr>
 <tr>
@@ -4671,13 +4673,13 @@ CedV_193 - CedV_199
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
--0.55
+-0.549
 </td>
 <td style="text-align:left;">
-1
+0.999
 </td>
 <td style="text-align:left;">
--1.79 ± 3.26
+-1.79 ± 3.261
 </td>
 </tr>
 <tr>
@@ -4691,13 +4693,13 @@ CedV_193 - CedV_202
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
--0.63
+-0.630
 </td>
 <td style="text-align:left;">
-1
+0.998
 </td>
 <td style="text-align:left;">
--2.13 ± 3.38
+-2.13 ± 3.381
 </td>
 </tr>
 <tr>
@@ -4711,13 +4713,13 @@ CedV_196 - CedV_199
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
-0.64
+0.642
 </td>
 <td style="text-align:left;">
-1
+0.997
 </td>
 <td style="text-align:left;">
-2.12 ± 3.3
+2.12 ± 3.303
 </td>
 </tr>
 <tr>
@@ -4731,13 +4733,13 @@ CedV_196 - CedV_202
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
-0.52
+0.520
 </td>
 <td style="text-align:left;">
-1
+0.999
 </td>
 <td style="text-align:left;">
-1.78 ± 3.42
+1.78 ± 3.422
 </td>
 </tr>
 <tr>
@@ -4751,13 +4753,13 @@ CedV_199 - CedV_202
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
--0.24
+-0.242
 </td>
 <td style="text-align:left;">
 1
 </td>
 <td style="text-align:left;">
--0.34 ± 1.4
+-0.34 ± 1.404
 </td>
 </tr>
 </tbody>
@@ -4816,7 +4818,7 @@ stats = rbind(stats, tukey)
 
 stats = stats[order(stats$Variable), ]
 
-stats = stats %&gt;% mutate_if(is.numeric, round, digits = 2)
+stats = stats %&gt;% mutate_if(is.numeric, round, digits = 3)
 
 stats[stats$p_value &lt; 0.001, &quot;p_value&quot;] = &quot;&lt; 0.001&quot;
 
@@ -4825,7 +4827,7 @@ stats$Estimate = paste0(stats$Estimate, &quot; ± &quot;, stats$se)
 stats = stats[, c(&quot;Variable&quot;, &quot;Comparison&quot;, &quot;Test&quot;, &quot;Statistics&quot;, &quot;p_value&quot;, &quot;Estimate&quot;)]
 stats[stats$Estimate == (&quot;NA ± NA&quot;), &quot;Estimate&quot;] = NA
 
-kable(stats, digits = 2, row.names = F, caption = 
+kable(stats, digits = 3, row.names = F, caption = 
         &quot;Comparison of fusion performances among NiV mutants. The effect of virus genotype on the variable of interest was quantified with a Wald test (reporting an F-value) obtained from a mixed model allowing for heterogeneous variance among groups (here G genotype) and including a random effect representing the experimental session. As this experiment included more than two groups, post-hoc pairwise comparisons between genotypes were then performed using a Tukey test (reporting a t-ratio). Fusion was quantified as number of nuclei included in syncytia.&quot;
       ) %&gt;%
   kable_styling(bootstrap_options = c(&quot;striped&quot;, &quot;hover&quot;, &quot;condensed&quot;))</code></pre>
@@ -4866,7 +4868,7 @@ Fusion
 Wald test (F-value)
 </td>
 <td style="text-align:right;">
-49.21
+49.210
 </td>
 <td style="text-align:left;">
 &lt; 0.001
@@ -4885,13 +4887,13 @@ Vector - NiV
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
--8.90
+-8.895
 </td>
 <td style="text-align:left;">
 &lt; 0.001
 </td>
 <td style="text-align:left;">
--349.9 ± 39.33
+-349.9 ± 39.335
 </td>
 </tr>
 <tr>
@@ -4905,13 +4907,13 @@ Vector - NiV_167
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
--7.11
+-7.112
 </td>
 <td style="text-align:left;">
 &lt; 0.001
 </td>
 <td style="text-align:left;">
--517.73 ± 72.8
+-517.733 ± 72.796
 </td>
 </tr>
 <tr>
@@ -4925,13 +4927,13 @@ Vector - NiV_170
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
--4.35
+-4.354
 </td>
 <td style="text-align:left;">
-&lt; 0.001
+0.002
 </td>
 <td style="text-align:left;">
--8.53 ± 1.96
+-8.533 ± 1.96
 </td>
 </tr>
 <tr>
@@ -4945,13 +4947,13 @@ NiV - NiV_167
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
--2.03
+-2.029
 </td>
 <td style="text-align:left;">
-0.21
+0.214
 </td>
 <td style="text-align:left;">
--167.83 ± 82.73
+-167.833 ± 82.735
 </td>
 </tr>
 <tr>
@@ -4965,13 +4967,13 @@ NiV - NiV_170
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
-8.67
+8.672
 </td>
 <td style="text-align:left;">
 &lt; 0.001
 </td>
 <td style="text-align:left;">
-341.37 ± 39.37
+341.367 ± 39.366
 </td>
 </tr>
 <tr>
@@ -4985,13 +4987,13 @@ NiV_167 - NiV_170
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
-6.99
+6.993
 </td>
 <td style="text-align:left;">
 &lt; 0.001
 </td>
 <td style="text-align:left;">
-509.2 ± 72.81
+509.2 ± 72.812
 </td>
 </tr>
 </tbody>
@@ -5050,7 +5052,7 @@ stats = rbind(stats, tukey)
 
 stats = stats[order(stats$Variable), ]
 
-stats = stats %&gt;% mutate_if(is.numeric, round, digits = 2)
+stats = stats %&gt;% mutate_if(is.numeric, round, digits = 3)
 
 stats[stats$p_value &lt; 0.001, &quot;p_value&quot;] = &quot;&lt; 0.001&quot;
 
@@ -5059,7 +5061,7 @@ stats$Estimate = paste0(stats$Estimate, &quot; ± &quot;, stats$se)
 stats = stats[, c(&quot;Variable&quot;, &quot;Comparison&quot;, &quot;Test&quot;, &quot;Statistics&quot;, &quot;p_value&quot;, &quot;Estimate&quot;)]
 stats[stats$Estimate == (&quot;NA ± NA&quot;), &quot;Estimate&quot;] = NA
 
-kable(stats, digits = 2, row.names = F, caption = 
+kable(stats, digits = 3, row.names = F, caption = 
         &quot;Comparison of binding affinity for ephrin-B2 among NiV mutants. The effect of virus genotype on the variable of interest was quantified with a Wald test (reporting an F-value) obtained from a mixed model allowing for heterogeneous variance among groups (here G genotype) and including a random effect representing the experimental session. As this experiment included more than two groups, post-hoc pairwise comparisons between genotypes were then performed using a Tukey test (reporting a t-ratio). Affinity was quantified as flow-cytometry signal.&quot;
       ) %&gt;%
   kable_styling(bootstrap_options = c(&quot;striped&quot;, &quot;hover&quot;, &quot;condensed&quot;))</code></pre>
@@ -5100,7 +5102,7 @@ Ephrin-B2 binding
 Wald test (F-value)
 </td>
 <td style="text-align:right;">
-717.91
+717.915
 </td>
 <td style="text-align:left;">
 &lt; 0.001
@@ -5119,13 +5121,13 @@ Vector - NiV
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
--46.14
+-46.139
 </td>
 <td style="text-align:left;">
 &lt; 0.001
 </td>
 <td style="text-align:left;">
--861.42 ± 18.67
+-861.417 ± 18.67
 </td>
 </tr>
 <tr>
@@ -5139,10 +5141,10 @@ Vector - NiV_167
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
--1.42
+-1.422
 </td>
 <td style="text-align:left;">
-0.53
+0.531
 </td>
 <td style="text-align:left;">
 -11.82 ± 8.31
@@ -5159,13 +5161,13 @@ Vector - NiV_170
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
--2.96
+-2.957
 </td>
 <td style="text-align:left;">
-0.09
+0.091
 </td>
 <td style="text-align:left;">
--13.62 ± 4.61
+-13.623 ± 4.607
 </td>
 </tr>
 <tr>
@@ -5179,13 +5181,13 @@ NiV - NiV_167
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
-43.09
+43.089
 </td>
 <td style="text-align:left;">
 &lt; 0.001
 </td>
 <td style="text-align:left;">
-849.6 ± 19.72
+849.597 ± 19.717
 </td>
 </tr>
 <tr>
@@ -5199,13 +5201,13 @@ NiV - NiV_170
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
-45.91
+45.915
 </td>
 <td style="text-align:left;">
 &lt; 0.001
 </td>
 <td style="text-align:left;">
-847.79 ± 18.46
+847.793 ± 18.464
 </td>
 </tr>
 <tr>
@@ -5219,13 +5221,13 @@ NiV_167 - NiV_170
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
--0.23
+-0.230
 </td>
 <td style="text-align:left;">
-1
+0.995
 </td>
 <td style="text-align:left;">
--1.8 ± 7.84
+-1.803 ± 7.838
 </td>
 </tr>
 </tbody>
@@ -5284,7 +5286,7 @@ stats = rbind(stats, tukey)
 
 stats = stats[order(stats$Variable), ]
 
-stats = stats %&gt;% mutate_if(is.numeric, round, digits = 2)
+stats = stats %&gt;% mutate_if(is.numeric, round, digits = 3)
 
 stats[stats$p_value &lt; 0.001, &quot;p_value&quot;] = &quot;&lt; 0.001&quot;
 
@@ -5293,7 +5295,7 @@ stats$Estimate = paste0(stats$Estimate, &quot; ± &quot;, stats$se)
 stats = stats[, c(&quot;Variable&quot;, &quot;Comparison&quot;, &quot;Test&quot;, &quot;Statistics&quot;, &quot;p_value&quot;, &quot;Estimate&quot;)]
 stats[stats$Estimate == (&quot;NA ± NA&quot;), &quot;Estimate&quot;] = NA
 
-kable(stats, digits = 2, row.names = F, caption = 
+kable(stats, digits = 3, row.names = F, caption = 
         &quot;Comparison of fusion performances among HeV mutants. The effect of virus genotype on the variable of interest was quantified with a Wald test (reporting an F-value) obtained from a mixed model allowing for heterogeneous variance among groups (here G genotype) and including a random effect representing the experimental session. As this experiment included more than two groups, post-hoc pairwise comparisons between genotypes were then performed using a Tukey test (reporting a t-ratio). Fusion was quantified as number of nuclei included in syncytia.&quot;
       ) %&gt;%
   kable_styling(bootstrap_options = c(&quot;striped&quot;, &quot;hover&quot;, &quot;condensed&quot;))</code></pre>
@@ -5334,7 +5336,7 @@ Fusion
 Wald test (F-value)
 </td>
 <td style="text-align:right;">
-99.44
+99.439
 </td>
 <td style="text-align:left;">
 &lt; 0.001
@@ -5353,13 +5355,13 @@ Vector - HeV
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
--14.40
+-14.397
 </td>
 <td style="text-align:left;">
 &lt; 0.001
 </td>
 <td style="text-align:left;">
--331.6 ± 23.03
+-331.6 ± 23.033
 </td>
 </tr>
 <tr>
@@ -5373,13 +5375,13 @@ Vector - HeV_167
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
--8.91
+-8.912
 </td>
 <td style="text-align:left;">
 &lt; 0.001
 </td>
 <td style="text-align:left;">
--509 ± 57.11
+-509 ± 57.114
 </td>
 </tr>
 <tr>
@@ -5393,13 +5395,13 @@ Vector - HeV_170
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
--3.91
+-3.913
 </td>
 <td style="text-align:left;">
-0.01
+0.005
 </td>
 <td style="text-align:left;">
--7.63 ± 1.95
+-7.633 ± 1.951
 </td>
 </tr>
 <tr>
@@ -5413,13 +5415,13 @@ HeV - HeV_167
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
--2.88
+-2.882
 </td>
 <td style="text-align:left;">
-0.04
+0.045
 </td>
 <td style="text-align:left;">
--177.4 ± 61.56
+-177.4 ± 61.564
 </td>
 </tr>
 <tr>
@@ -5433,13 +5435,13 @@ HeV - HeV_170
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
-14.05
+14.046
 </td>
 <td style="text-align:left;">
 &lt; 0.001
 </td>
 <td style="text-align:left;">
-323.97 ± 23.06
+323.967 ± 23.064
 </td>
 </tr>
 <tr>
@@ -5453,13 +5455,13 @@ HeV_167 - HeV_170
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
-8.78
+8.776
 </td>
 <td style="text-align:left;">
 &lt; 0.001
 </td>
 <td style="text-align:left;">
-501.37 ± 57.13
+501.367 ± 57.127
 </td>
 </tr>
 </tbody>
@@ -5518,7 +5520,7 @@ stats = rbind(stats, tukey)
 
 stats = stats[order(stats$Variable), ]
 
-stats = stats %&gt;% mutate_if(is.numeric, round, digits = 2)
+stats = stats %&gt;% mutate_if(is.numeric, round, digits = 3)
 
 stats[stats$p_value &lt; 0.001, &quot;p_value&quot;] = &quot;&lt; 0.001&quot;
 
@@ -5527,7 +5529,7 @@ stats$Estimate = paste0(stats$Estimate, &quot; ± &quot;, stats$se)
 stats = stats[, c(&quot;Variable&quot;, &quot;Comparison&quot;, &quot;Test&quot;, &quot;Statistics&quot;, &quot;p_value&quot;, &quot;Estimate&quot;)]
 stats[stats$Estimate == (&quot;NA ± NA&quot;), &quot;Estimate&quot;] = NA
 
-kable(stats, digits = 2, row.names = F, caption =
+kable(stats, digits = 3, row.names = F, caption =
         &quot;Comparison of binding affinity for ephrin-B2 among HeV mutants. The effect of virus genotype on the variable of interest was quantified with a Wald test (reporting an F-value) obtained from a mixed model allowing for heterogeneous variance among groups (here G genotype) and including a random effect representing the experimental session. As this experiment included more than two groups, post-hoc pairwise comparisons between genotypes were then performed using a Tukey test (reporting a t-ratio). Affinity was quantified as flow-cytometry signal.&quot;
       ) %&gt;%
   kable_styling(bootstrap_options = c(&quot;striped&quot;, &quot;hover&quot;, &quot;condensed&quot;))</code></pre>
@@ -5568,7 +5570,7 @@ Ephrin-B2 binding
 Wald test (F-value)
 </td>
 <td style="text-align:right;">
-972.84
+972.837
 </td>
 <td style="text-align:left;">
 &lt; 0.001
@@ -5587,13 +5589,13 @@ Vector - HeV
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
--54.01
+-54.006
 </td>
 <td style="text-align:left;">
 &lt; 0.001
 </td>
 <td style="text-align:left;">
--822.69 ± 15.23
+-822.69 ± 15.233
 </td>
 </tr>
 <tr>
@@ -5607,13 +5609,13 @@ Vector - HeV_167
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
--3.51
+-3.509
 </td>
 <td style="text-align:left;">
-0.05
+0.047
 </td>
 <td style="text-align:left;">
--5.42 ± 1.54
+-5.417 ± 1.544
 </td>
 </tr>
 <tr>
@@ -5627,13 +5629,13 @@ Vector - HeV_170
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
--3.57
+-3.573
 </td>
 <td style="text-align:left;">
-0.04
+0.044
 </td>
 <td style="text-align:left;">
--4.37 ± 1.22
+-4.373 ± 1.224
 </td>
 </tr>
 <tr>
@@ -5647,13 +5649,13 @@ HeV - HeV_167
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
-53.72
+53.722
 </td>
 <td style="text-align:left;">
 &lt; 0.001
 </td>
 <td style="text-align:left;">
-817.27 ± 15.21
+817.273 ± 15.213
 </td>
 </tr>
 <tr>
@@ -5667,13 +5669,13 @@ HeV - HeV_170
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
-53.89
+53.894
 </td>
 <td style="text-align:left;">
 &lt; 0.001
 </td>
 <td style="text-align:left;">
-818.32 ± 15.18
+818.317 ± 15.184
 </td>
 </tr>
 <tr>
@@ -5687,13 +5689,13 @@ HeV_167 - HeV_170
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
-1.11
+1.109
 </td>
 <td style="text-align:left;">
-0.7
+0.698
 </td>
 <td style="text-align:left;">
-1.04 ± 0.94
+1.043 ± 0.941
 </td>
 </tr>
 </tbody>
@@ -6163,7 +6165,7 @@ stats = rbind(stats, tukey)
 
 stats = stats[order(stats$Variable), ]
 
-stats = stats %&gt;% mutate_if(is.numeric, round, digits = 2)
+stats = stats %&gt;% mutate_if(is.numeric, round, digits = 3)
 
 stats[stats$p_value &lt; 0.001, &quot;p_value&quot;] = &quot;&lt; 0.001&quot;
 
@@ -6172,7 +6174,7 @@ stats$Estimate = paste0(stats$Estimate, &quot; ± &quot;, stats$se)
 stats = stats[, c(&quot;Variable&quot;, &quot;Comparison&quot;, &quot;Test&quot;, &quot;Statistics&quot;, &quot;p_value&quot;, &quot;Estimate&quot;)]
 stats[stats$Estimate == (&quot;NA ± NA&quot;), &quot;Estimate&quot;] = NA
 
-kable(stats, digits = 2, row.names = F, caption =
+kable(stats, digits = 3, row.names = F, caption =
         &quot;Analysis of the effect of HA-tag on fusion in CedV mutants. The effect of virus genotype on the variable of interest was quantified with a Wald test (reporting an F-value) obtained from a mixed model allowing for heterogeneous variance among groups (here tagged vs untagged) and including a random effect representing the experimental session. As this experiment included more than two groups, post-hoc pairwise comparisons between genotypes were then performed using a Tukey test (reporting a t-ratio). Fusion was quantified as number of nuclei included in syncytia, and fusion indices as number of nuclei included in syncytia / flow-cytometry signal.&quot;
       ) %&gt;%
   kable_styling(bootstrap_options = c(&quot;striped&quot;, &quot;hover&quot;, &quot;condensed&quot;))</code></pre>
@@ -6213,7 +6215,7 @@ Fusion
 Wald test (F-value)
 </td>
 <td style="text-align:right;">
-536.36
+536.364
 </td>
 <td style="text-align:left;">
 &lt; 0.001
@@ -6232,13 +6234,13 @@ CedV_HA - CedV_193_none
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
--14.02
+-14.020
 </td>
 <td style="text-align:left;">
 &lt; 0.001
 </td>
 <td style="text-align:left;">
--151.65 ± 10.82
+-151.65 ± 10.817
 </td>
 </tr>
 <tr>
@@ -6252,13 +6254,13 @@ CedV_HA - CedV_193_HA
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
--30.54
+-30.538
 </td>
 <td style="text-align:left;">
 &lt; 0.001
 </td>
 <td style="text-align:left;">
--81.45 ± 2.67
+-81.45 ± 2.667
 </td>
 </tr>
 <tr>
@@ -6272,13 +6274,13 @@ CedV_193_none - CedV_193_HA
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
-6.41
+6.410
 </td>
 <td style="text-align:left;">
 &lt; 0.001
 </td>
 <td style="text-align:left;">
-70.2 ± 10.95
+70.2 ± 10.952
 </td>
 </tr>
 <tr>
@@ -6291,7 +6293,7 @@ Fusion index / F
 Wald test (F-value)
 </td>
 <td style="text-align:right;">
-42.96
+42.956
 </td>
 <td style="text-align:left;">
 &lt; 0.001
@@ -6310,13 +6312,13 @@ CedV_HA - CedV_193_none
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
--9.25
+-9.252
 </td>
 <td style="text-align:left;">
 &lt; 0.001
 </td>
 <td style="text-align:left;">
--0.48 ± 0.05
+-0.478 ± 0.052
 </td>
 </tr>
 <tr>
@@ -6330,13 +6332,13 @@ CedV_HA - CedV_193_HA
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
--5.29
+-5.288
 </td>
 <td style="text-align:left;">
 &lt; 0.001
 </td>
 <td style="text-align:left;">
--0.25 ± 0.05
+-0.248 ± 0.047
 </td>
 </tr>
 <tr>
@@ -6350,13 +6352,13 @@ CedV_193_none - CedV_193_HA
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
-4.75
+4.753
 </td>
 <td style="text-align:left;">
 &lt; 0.001
 </td>
 <td style="text-align:left;">
-0.23 ± 0.05
+0.231 ± 0.048
 </td>
 </tr>
 <tr>
@@ -6369,7 +6371,7 @@ Fusion index / G
 Wald test (F-value)
 </td>
 <td style="text-align:right;">
-155.81
+155.806
 </td>
 <td style="text-align:left;">
 &lt; 0.001
@@ -6388,13 +6390,13 @@ CedV_HA - CedV_193_none
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
--7.97
+-7.971
 </td>
 <td style="text-align:left;">
 &lt; 0.001
 </td>
 <td style="text-align:left;">
--1.22 ± 0.15
+-1.219 ± 0.153
 </td>
 </tr>
 <tr>
@@ -6408,13 +6410,13 @@ CedV_HA - CedV_193_HA
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
--16.74
+-16.738
 </td>
 <td style="text-align:left;">
 &lt; 0.001
 </td>
 <td style="text-align:left;">
--0.52 ± 0.03
+-0.515 ± 0.031
 </td>
 </tr>
 <tr>
@@ -6428,13 +6430,13 @@ CedV_193_none - CedV_193_HA
 Tukey pairwise Comparison (t-ratio)
 </td>
 <td style="text-align:right;">
-4.64
+4.643
 </td>
 <td style="text-align:left;">
-&lt; 0.001
+0.001
 </td>
 <td style="text-align:left;">
-0.7 ± 0.15
+0.704 ± 0.152
 </td>
 </tr>
 </tbody>
@@ -6523,7 +6525,7 @@ colnames(stats) = c(&quot;Variable&quot;, &quot;Comparison&quot;, &quot;Test&quo
 
 stats = stats[order(stats$Variable), ]
 
-stats = stats %&gt;% mutate_if(is.numeric, round, digits = 2)
+stats = stats %&gt;% mutate_if(is.numeric, round, digits = 3)
 
 stats[stats$p_value &lt; 0.001, &quot;p-value&quot;] = &quot;&lt; 0.001&quot;
 
@@ -6531,7 +6533,7 @@ stats$Estimate = paste0(stats$Estimate, &quot; ± &quot;, stats$se)
 
 stats = stats[, c(&quot;Variable&quot;, &quot;Comparison&quot;, &quot;Test&quot;, &quot;Statistics&quot;, &quot;p-value&quot;, &quot;Estimate&quot;)]
 
-kable(stats, digits = 2, row.names = F, caption =
+kable(stats, digits = 3, row.names = F, caption =
         &quot;Comparison of fusion indices among NiV mutants. The effect of virus genotype on the variable of interest was quantified with a Wald test (reporting a t-value) obtained from a mixed model allowing for heterogeneous variance among groups (here NiV mutants) and including a random effect representing the experimental session. Fusion was quantified as number of nuclei included in syncytia, and fusion indices as number of nuclei included in syncytia / flow-cytometry signal.&quot;
       ) %&gt;%
   kable_styling(bootstrap_options = c(&quot;striped&quot;, &quot;hover&quot;, &quot;condensed&quot;))</code></pre>
@@ -6573,13 +6575,13 @@ NiV167 - NiV
 Wald test (t-ratio)
 </td>
 <td style="text-align:right;">
-5.62
+5.623
 </td>
 <td style="text-align:right;">
 0
 </td>
 <td style="text-align:left;">
-62.8 ± 11.17
+62.8 ± 11.169
 </td>
 </tr>
 <tr>
@@ -6593,13 +6595,13 @@ NiV167 - NiV
 Wald test (t-ratio)
 </td>
 <td style="text-align:right;">
-6.30
+6.298
 </td>
 <td style="text-align:right;">
 0
 </td>
 <td style="text-align:left;">
-0.24 ± 0.04
+0.238 ± 0.038
 </td>
 </tr>
 <tr>
@@ -6613,13 +6615,13 @@ NiV167 - NiV
 Wald test (t-ratio)
 </td>
 <td style="text-align:right;">
-7.89
+7.888
 </td>
 <td style="text-align:right;">
 0
 </td>
 <td style="text-align:left;">
-0.83 ± 0.11
+0.829 ± 0.105
 </td>
 </tr>
 </tbody>
@@ -6663,7 +6665,7 @@ colnames(stats) = c(&quot;Variable&quot;, &quot;Comparison&quot;, &quot;Test&quo
 
 stats = stats[order(stats$Variable), ]
 
-stats = stats %&gt;% mutate_if(is.numeric, round, digits = 2)
+stats = stats %&gt;% mutate_if(is.numeric, round, digits = 3)
 
 stats[stats$p_value &lt; 0.001, &quot;p-value&quot;] = &quot;&lt; 0.001&quot;
 
@@ -6671,7 +6673,7 @@ stats$Estimate = paste0(stats$Estimate, &quot; ± &quot;, stats$se)
 
 stats = stats[, c(&quot;Variable&quot;, &quot;Comparison&quot;, &quot;Test&quot;, &quot;Statistics&quot;, &quot;p-value&quot;, &quot;Estimate&quot;)]
 
-kable(stats, digits = 2, row.names = F, caption = 
+kable(stats, digits = 3, row.names = F, caption = 
         &quot;Analysis of the effect of HA-tag of CedV G193 on F cell surface expression (CSE). The effect of virus genotype on the variable of interest was quantified with a Wald test (reporting a t-value) obtained from a mixed model allowing for heterogeneous variance among groups (here tagged vs untagged) and including a random effect representing the experimental session. Cell surface expression was quantified as flow-cytometry signal. &quot;
       ) %&gt;%
   kable_styling(bootstrap_options = c(&quot;striped&quot;, &quot;hover&quot;, &quot;condensed&quot;))</code></pre>
@@ -6716,10 +6718,10 @@ Wald test (t-ratio)
 -1.46
 </td>
 <td style="text-align:right;">
-0.18
+0.182
 </td>
 <td style="text-align:left;">
--17.42 ± 11.93
+-17.422 ± 11.93
 </td>
 </tr>
 </tbody>
@@ -6878,7 +6880,7 @@ colnames(stats) = c(&quot;Variable&quot;, &quot;Comparison&quot;, &quot;Test&quo
 
 stats = stats[order(stats$Variable), ]
 
-stats = stats %&gt;% mutate_if(is.numeric, round, digits = 2)
+stats = stats %&gt;% mutate_if(is.numeric, round, digits = 3)
 
 stats[stats$p_value &lt; 0.001, &quot;p-value&quot;] = &quot;&lt; 0.001&quot;
 
@@ -6886,7 +6888,7 @@ stats$Estimate = paste0(stats$Estimate, &quot; ± &quot;, stats$se)
 
 stats = stats[, c(&quot;Variable&quot;, &quot;Comparison&quot;, &quot;Test&quot;, &quot;Statistics&quot;, &quot;p-value&quot;, &quot;Estimate&quot;)]
 
-kable(stats, digits = 2, row.names = F, caption = 
+kable(stats, digits = 3, row.names = F, caption = 
         &quot;Comparison of F G avidity between CedV G and CedV G193. The effect of virus genotype on the variable of interest was quantified with a Wald test (reporting a t-value) obtained from a mixed model allowing for heterogeneous variance among groups (here G genotype) and including a random effect representing the experimental session. Avidity was quantified as densitometry signal. &quot;
       ) %&gt;%
   kable_styling(bootstrap_options = c(&quot;striped&quot;, &quot;hover&quot;, &quot;condensed&quot;))</code></pre>
@@ -6928,13 +6930,13 @@ CedV193 - CedV
 Wald test (t-ratio)
 </td>
 <td style="text-align:right;">
--18.51
+-18.505
 </td>
 <td style="text-align:right;">
-0
+0.003
 </td>
 <td style="text-align:left;">
--42775149.77 ± 2311506.38
+-42775149.767 ± 2311506.383
 </td>
 </tr>
 </tbody>
@@ -7023,14 +7025,14 @@ ggplot(NnH_CSE_aggr, aes(x = virus, y = value_relative)) +
 <pre class="r"><code>plot_1 = ggplot(NnH_fusion_aggr, aes(x = virus, y = value_relative)) +
   geom_point(size = 1, alpha = 0.7, position=position_dodge(width = 0.25), color = &quot;grey&quot;, fill = &quot;grey&quot;, shape = 17) +
   stat_summary(fun.data = mean_sdl, fun.args = list(mult = 1), position=position_dodge(width = 0.25), alpha = 0.7, size = 0.25, shape = 17) + 
-  scale_x_discrete(labels = c(&quot;NiV&quot;, &quot;NiV 167&quot;, &quot;HeV&quot;, &quot;HeV 167&quot;)) +
+  scale_x_discrete(labels = c(&quot;NiV&quot;, &quot;NiV167(HA)&quot;, &quot;HeV&quot;, &quot;HeV167(HA)&quot;)) +
   scale_y_continuous(name = &quot;Fusion&quot;, limits = c(-0.01, 1.25), breaks = seq(0, 1.25, 0.5), labels = scales::percent) +
   ggtheme + theme(axis.title.x = element_blank(), legend.title = element_blank())
 
 plot_2 = ggplot(NnH_CSE_aggr, aes(x = virus, y = value_relative)) +
   geom_point(size = 1, alpha = 0.7, position=position_dodge(width = 0.25), color = &quot;grey&quot;, fill = &quot;grey&quot;) +
   stat_summary(fun.data = mean_sdl, fun.args = list(mult = 1), position=position_dodge(width = 0.25), alpha = 0.7, size = 0.25, color = &quot;#67a9cf&quot;) + 
-  scale_x_discrete(labels = c(&quot;NiV 167&quot;, &quot;HeV 167&quot;)) +
+  scale_x_discrete(labels = c(&quot;NiV167(HA)&quot;, &quot;HeV167(HA)&quot;)) +
   scale_y_continuous(name = &quot;Cell surface\nexpression (CSE)&quot;, limits = c(-0.01, 1.25), breaks = seq(0, 1.25, 0.5), labels = scales::percent) +
   ggtheme + theme(axis.title.x = element_blank(), legend.title = element_blank())
 
@@ -7083,7 +7085,7 @@ colnames(stats) = c(&quot;Variable&quot;, &quot;Comparison&quot;, &quot;Test&quo
 
 stats = stats[order(stats$Variable), ]
 
-stats = stats %&gt;% mutate_if(is.numeric, round, digits = 2)
+stats = stats %&gt;% mutate_if(is.numeric, round, digits = 3)
 
 stats[stats$p_value &lt; 0.001, &quot;p-value&quot;] = &quot;&lt; 0.001&quot;
 
@@ -7091,7 +7093,7 @@ stats$Estimate = paste0(stats$Estimate, &quot; ± &quot;, stats$se)
 
 stats = stats[, c(&quot;Variable&quot;, &quot;Comparison&quot;, &quot;Test&quot;, &quot;Statistics&quot;, &quot;p-value&quot;, &quot;Estimate&quot;)]
 
-kable(stats, digits = 2, row.names = F, caption =
+kable(stats, digits = 3, row.names = F, caption =
         &quot;Analysis of the effect of HA-tag on fusion in NiV mutants. The effect of virus genotype on the variable of interest was quantified with a Wald test (reporting an F-value) obtained from a mixed model allowing for heterogeneous variance among groups (here tagged vs untagged) and including a random effect representing the experimental session. Fusion was quantified as number of nuclei included in syncytia, and fusion indices as number of nuclei included in syncytia / flow-cytometry signal.&quot;
       ) %&gt;%
   kable_styling(bootstrap_options = c(&quot;striped&quot;, &quot;hover&quot;, &quot;condensed&quot;))</code></pre>
@@ -7133,13 +7135,13 @@ NiV 167 - NiV
 Wald test (t-ratio)
 </td>
 <td style="text-align:right;">
--10.15
+-10.153
 </td>
 <td style="text-align:right;">
 0
 </td>
 <td style="text-align:left;">
--480.3 ± 47.31
+-480.3 ± 47.308
 </td>
 </tr>
 </tbody>
@@ -7183,7 +7185,7 @@ colnames(stats) = c(&quot;Variable&quot;, &quot;Comparison&quot;, &quot;Test&quo
 
 stats = stats[order(stats$Variable), ]
 
-stats = stats %&gt;% mutate_if(is.numeric, round, digits = 2)
+stats = stats %&gt;% mutate_if(is.numeric, round, digits = 3)
 
 stats[stats$p_value &lt; 0.001, &quot;p-value&quot;] = &quot;&lt; 0.001&quot;
 
@@ -7191,7 +7193,7 @@ stats$Estimate = paste0(stats$Estimate, &quot; ± &quot;, stats$se)
 
 stats = stats[, c(&quot;Variable&quot;, &quot;Comparison&quot;, &quot;Test&quot;, &quot;Statistics&quot;, &quot;p-value&quot;, &quot;Estimate&quot;)]
 
-kable(stats, digits = 2, row.names = F, caption =
+kable(stats, digits = 3, row.names = F, caption =
         &quot;Analysis of the effect of HA-tag on fusion in HeV mutants. The effect of virus genotype on the variable of interest was quantified with a Wald test (reporting an F-value) obtained from a mixed model allowing for heterogeneous variance among groups (here tagged vs untagged) and including a random effect representing the experimental session. Fusion was quantified as number of nuclei included in syncytia, and fusion indices as number of nuclei included in syncytia / flow-cytometry signal.&quot;
       ) %&gt;%
   kable_styling(bootstrap_options = c(&quot;striped&quot;, &quot;hover&quot;, &quot;condensed&quot;))</code></pre>
@@ -7233,13 +7235,13 @@ HeV 167 - HeV
 Wald test (t-ratio)
 </td>
 <td style="text-align:right;">
--7.02
+-7.021
 </td>
 <td style="text-align:right;">
 0
 </td>
 <td style="text-align:left;">
--475.8 ± 67.77
+-475.8 ± 67.768
 </td>
 </tr>
 </tbody>
@@ -7299,7 +7301,7 @@ colnames(stats) = c("Variable", "Comparison", "Test", "Statistics", "p-value", "
 
 stats = stats[order(stats$Variable), ]
 
-stats = stats %>% mutate_if(is.numeric, round, digits = 2)
+stats = stats %>% mutate_if(is.numeric, round, digits = 3)
 
 stats[stats$p_value < 0.001, "p-value"] = "< 0.001"
 
@@ -7307,7 +7309,7 @@ stats$Estimate = paste0(stats$Estimate, " ± ", stats$se)
 
 stats = stats[, c("Variable", "Comparison", "Test", "Statistics", "p-value", "Estimate")]
 
-kable(stats, digits = 2, row.names = F) %>%
+kable(stats, digits = 3, row.names = F) %>%
   kable_styling(bootstrap_options = c("striped", "hover", "condensed"))
 ```
 
@@ -7327,19 +7329,241 @@ kable(stats, digits = 2, row.names = F) %>%
    <td style="text-align:left;"> Fusion </td>
    <td style="text-align:left;"> HeV - NiV </td>
    <td style="text-align:left;"> Wald test (t-ratio) </td>
-   <td style="text-align:right;"> -0.49 </td>
-   <td style="text-align:right;"> 0.63 </td>
-   <td style="text-align:left;"> -3.38 ± 6.84 </td>
+   <td style="text-align:right;"> -0.494 </td>
+   <td style="text-align:right;"> 0.635 </td>
+   <td style="text-align:left;"> -3.378 ± 6.842 </td>
   </tr>
 </tbody>
 </table>
 
 -->
+</div>
+</div>
+</div>
+<div id="avidity-chimers" class="section level1">
+<h1>6. Avidity chimers</h1>
+<div id="data-exploration-5" class="section level2">
+<h2>6.1. Data exploration</h2>
+<pre class="r"><code># subset data of interest
+Chav = subset(data, experiment == &quot;avidity selected chimers&quot;,
+             select = -c(experiment))
+
+Chav = as.data.frame(pivot_wider(Chav, names_from = variable, values_from = value))
+
+Chav$avidity = Chav$CoIP_GHA / Chav$Lysate_GHA * Chav$IP_FFLAG
+
+#Cav$avidity = NA
+#Cav[Cav$virus == &quot;CedV&quot;, &quot;avidity&quot;] = Cav[Cav$virus == &quot;CedV&quot;, &quot;CoIP_GHA&quot;] / 
+ # Cav[Cav$virus == &quot;CedV&quot;, &quot;Lysate_GHA&quot;] * Cav[Cav$virus == &quot;CedV&quot;, &quot;IP_FFLAG&quot;]
+
+# plot raw data
+ggplot(Chav, aes(x = virus, y = avidity)) +
+  geom_point(size = 1, alpha = 0.7, position=position_dodge(width = 0.25), color = &quot;grey&quot;) +
+  stat_summary(fun.data = mean_sdl, fun.args = list(mult = 1), position=position_dodge(width = 0.25), alpha = 0.7) +
+  scale_y_continuous(name = &quot;Avidity&quot;) +
+  scale_x_discrete(labels = c(&quot;NiV G\nCedV F&quot;, &quot;NiV G 167\nCedV F&quot;, &quot;CedV G\nNiV F&quot;, &quot;CedV G 193\nNiV F&quot;)) +
+  ggtheme + theme(axis.title.x = element_blank(), legend.title = element_blank()) +
+  ggtitle(&quot;Raw data&quot;) </code></pre>
+<p><img src="data:image/png;base64,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" width="907.086614173228" /></p>
+<pre class="r"><code># transform into relative data
+Chav$value_relative = NA
+for (i in 1:nrow(Chav)){
+  
+  if (is.element(Chav$virus[i], c(&quot;NiVG_CedVF&quot;, &quot;NiVG_CedVF_167&quot;))){
+      Chav$value_relative[i] = Chav$avidity[i] / 
+        Chav[Chav$replicate_bio == Chav$replicate_bio[i] &amp; 
+              Chav$virus == &quot;NiVG_CedVF&quot;, &quot;avidity&quot;]
+  }
+  
+    if (is.element(Chav$virus[i], c(&quot;CedVG_NiVF&quot;, &quot;CedVG_NiVF_193&quot;))){
+      Chav$value_relative[i] = Chav$avidity[i] / 
+        Chav[Chav$replicate_bio == Chav$replicate_bio[i] &amp; 
+              Chav$virus == &quot;CedVG_NiVF&quot;, &quot;avidity&quot;]
+  }
+  
+
+}
+remove(i)
+
+# plot relative data
+ggplot(Chav, aes(x = virus, y = value_relative)) +
+  geom_point(size = 1, alpha = 0.7, position=position_dodge(width = 0.25), color = &quot;grey&quot;) +
+  stat_summary(fun.data = mean_sdl, fun.args = list(mult = 1), position=position_dodge(width = 0.25), alpha = 0.7) +
+  scale_y_continuous(name = &quot;Avidity&quot;, labels = scales::percent) +
+  scale_x_discrete(labels = c(&quot;NiV G\nCedV F&quot;, &quot;NiV G 167\nCedV F&quot;, &quot;CedV G\nNiV F&quot;, &quot;CedV G 193\nNiV F&quot;)) +
+  ggtheme + theme(axis.title.x = element_blank(), legend.title = element_blank())+
+  ggtitle(&quot;Relative data&quot;) </code></pre>
+<p><img src="data:image/png;base64,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" width="907.086614173228" /></p>
+</div>
+<div id="publication-figure-5" class="section level2">
+<h2>4.2. Publication figure</h2>
+<pre class="r"><code>plot_1 = ggplot(subset(Chav, is.element(virus, c(&quot;NiVG_CedVF&quot;, &quot;NiVG_CedVF_167&quot;))), aes(x = virus, y = value_relative)) +
+  geom_point(size = 1, alpha = 0.7, position=position_dodge(width = 0.25), color = &quot;grey&quot;) +
+  stat_summary(fun.data = mean_sdl, fun.args = list(mult = 1), position=position_dodge(width = 0.25), alpha = 0.7) +
+  scale_y_continuous(name = &quot;Avidity&quot;, labels = scales::percent, limits = c(0, 1)) +
+  scale_x_discrete(labels = c(&quot;NiV G\nCedV F&quot;, &quot;NiV G 167\nCedV F&quot;)) +
+  ggtheme + theme(axis.title.x = element_blank(), legend.title = element_blank())
+
+plot_2 = ggplot(subset(Chav, is.element(virus, c(&quot;CedVG_NiVF&quot;, &quot;CedVG_NiVF_193&quot;))), aes(x = virus, y = value_relative)) +
+  geom_point(size = 1, alpha = 0.7, position=position_dodge(width = 0.25), color = &quot;grey&quot;) +
+  stat_summary(fun.data = mean_sdl, fun.args = list(mult = 1), position=position_dodge(width = 0.25), alpha = 0.7) +
+  scale_y_continuous(name = &quot;Avidity&quot;, labels = scales::percent, limits = c(0, 1)) +
+  scale_x_discrete(labels = c(&quot;CedV G\nNiV F&quot;, &quot;CedV G 193\nNiV F&quot;)) +
+  ggtheme + theme(axis.title.x = element_blank(), legend.title = element_blank()) +
+  theme(axis.title.y = element_blank(), axis.text.y = element_blank())
+
+plot_1 | plot_2</code></pre>
+<pre class="r"><code># print 
+# plot_2
+
+ggsave(paste0(&quot;export/CedV_fusion_&quot;, &quot;Fig7e&quot;, &quot;.pdf&quot;),
+       width = 10, height = 5, units = &quot;cm&quot;, dpi = 600)</code></pre>
+</div>
+<div id="statistical-analyses-5" class="section level2">
+<h2>4.3. Statistical analyses</h2>
+<p>Homo: under the homoscedasticity assumption; Hetero: under the heteroscedasticity assumption</p>
+<pre class="r"><code># Tests
+
+test_1_homo = lme(avidity ~ virus, random = ~ 1|replicate_bio,
+                    data = subset(Chav, is.element(virus, c(&quot;NiVG_CedVF&quot;, &quot;NiVG_CedVF_167&quot;))),
+                    method = &quot;ML&quot;)
+
+test_1_hetero = lme(avidity ~ virus, random = ~ 1|replicate_bio,
+                    data = subset(Chav, is.element(virus, c(&quot;NiVG_CedVF&quot;, &quot;NiVG_CedVF_167&quot;))),
+                    method = &quot;ML&quot;,
+                    weights = varIdent(form = ~ 1|virus))
+
+anova(test_1_homo, test_1_hetero)</code></pre>
+<pre><code>##               Model df      AIC      BIC    logLik   Test  L.Ratio p-value
+## test_1_homo       1  4 198.5142 197.6812 -95.25710                        
+## test_1_hetero     2  5 198.8815 197.8403 -94.44076 1 vs 2 1.632676  0.2013</code></pre>
+<pre class="r"><code>anova(test_1_homo)</code></pre>
+<pre><code>##             numDF denDF  F-value p-value
+## (Intercept)     1     2 321.4909  0.0031
+## virus           1     2 307.3130  0.0032</code></pre>
+<pre class="r"><code>test_2_homo = lme(avidity ~ virus, random = ~ 1|replicate_bio,
+                    data = subset(Chav, is.element(virus, c(&quot;CedVG_NiVF&quot;, &quot;CedVG_NiVF_193&quot;))),
+                    method = &quot;ML&quot;)
+
+test_2_hetero = lme(avidity ~ virus, random = ~ 1|replicate_bio,
+                    data = subset(Chav, is.element(virus, c(&quot;CedVG_NiVF&quot;, &quot;CedVG_NiVF_193&quot;))),
+                    method = &quot;ML&quot;,
+                    weights = varIdent(form = ~ 1|virus))
+
+anova(test_2_homo, test_2_hetero)</code></pre>
+<pre><code>##               Model df      AIC      BIC    logLik   Test  L.Ratio p-value
+## test_2_homo       1  4 234.7849 233.9519 -113.3924                        
+## test_2_hetero     2  5 231.4949 230.4537 -110.7475 1 vs 2 5.289946  0.0214</code></pre>
+<pre class="r"><code>anova(test_2_homo)</code></pre>
+<pre><code>##             numDF denDF  F-value p-value
+## (Intercept)     1     2 144.7604  0.0068
+## virus           1     2 111.6735  0.0088</code></pre>
+<pre class="r"><code># Store and format results
+
+stats = as.data.frame(rbind(
+  summary(test_1_hetero)$tTable[2, ],
+  summary(test_2_hetero)$tTable[2, ]))
+
+stats$variable = c(&quot;F-G avidity&quot;)
+
+stats$comparison = c(rownames(summary(test_1_hetero)$tTable)[2], rownames(summary(test_2_hetero)$tTable)[2])
+
+stats$test = &quot;Wald test (t-ratio)&quot;
+
+stats = stats[, c(&quot;variable&quot;, &quot;comparison&quot;, &quot;test&quot;, &quot;t-value&quot;, &quot;p-value&quot;, &quot;Value&quot;, &quot;Std.Error&quot;)]
+colnames(stats) = c(&quot;Variable&quot;, &quot;Comparison&quot;, &quot;Test&quot;, &quot;Statistics&quot;, &quot;p-value&quot;, &quot;Estimate&quot;, &quot;se&quot;)
+
+stats = stats[order(stats$Variable), ]
+
+stats = stats %&gt;% mutate_if(is.numeric, round, digits = 3)
+
+stats[stats$p_value &lt; 0.001, &quot;p-value&quot;] = &quot;&lt; 0.001&quot;
+
+stats$Estimate = paste0(stats$Estimate, &quot; ± &quot;, stats$se)
+
+stats = stats[, c(&quot;Variable&quot;, &quot;Comparison&quot;, &quot;Test&quot;, &quot;Statistics&quot;, &quot;p-value&quot;, &quot;Estimate&quot;)]
+
+kable(stats, digits = 3, row.names = F, caption = 
+        &quot;Comparison of F G avidity between NiV and CedV mutant chimers. The effect of virus genotype on the variable of interest was quantified with a Wald test (reporting a t-value) obtained from a mixed model allowing for heterogeneous variance among groups (here G genotype) and including a random effect representing the experimental session. Avidity was quantified as densitometry signal. &quot;
+      ) %&gt;%
+  kable_styling(bootstrap_options = c(&quot;striped&quot;, &quot;hover&quot;, &quot;condensed&quot;))</code></pre>
+<table class="table table-striped table-hover table-condensed" style="margin-left: auto; margin-right: auto;">
+<caption>
+Comparison of F G avidity between NiV and CedV mutant chimers. The effect of virus genotype on the variable of interest was quantified with a Wald test (reporting a t-value) obtained from a mixed model allowing for heterogeneous variance among groups (here G genotype) and including a random effect representing the experimental session. Avidity was quantified as densitometry signal.
+</caption>
+<thead>
+<tr>
+<th style="text-align:left;">
+Variable
+</th>
+<th style="text-align:left;">
+Comparison
+</th>
+<th style="text-align:left;">
+Test
+</th>
+<th style="text-align:right;">
+Statistics
+</th>
+<th style="text-align:right;">
+p-value
+</th>
+<th style="text-align:left;">
+Estimate
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+F-G avidity
+</td>
+<td style="text-align:left;">
+virusNiVG_CedVF_167
+</td>
+<td style="text-align:left;">
+Wald test (t-ratio)
+</td>
+<td style="text-align:right;">
+-17.530
+</td>
+<td style="text-align:right;">
+0.003
+</td>
+<td style="text-align:left;">
+-26131895.073 ± 1490666.2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+F-G avidity
+</td>
+<td style="text-align:left;">
+virusCedVG_NiVF_193
+</td>
+<td style="text-align:left;">
+Wald test (t-ratio)
+</td>
+<td style="text-align:right;">
+-10.568
+</td>
+<td style="text-align:right;">
+0.009
+</td>
+<td style="text-align:left;">
+-329952916.848 ± 31223168.753
+</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code># clean working space
+remove(Chav, Cpo)
+remove(plot_1, plot_2)
+remove(test_1_hetero, test_1_homo, stats)</code></pre>
 <pre class="r"><code># clean working space
 remove(NnH, NnH_CSE_aggr, NnH_CSE_fusion_aggr, NnH_fusion_aggr)
 remove(plot_1, plot_2, patchwork)
 remove(test_1_hetero, test_1_homo, stats)</code></pre>
-</div>
 </div>
 </div>
 

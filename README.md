@@ -14,7 +14,7 @@ If you use the code or data provided here, please make sure to cite our work as 
 
 Bibtex record:
 ```
-@electronic{gamble2020heat,
+@electronic{yeo2021headless,
     Author = {
       Yao Yu Yeo AND
       David W. Buchholz AND
